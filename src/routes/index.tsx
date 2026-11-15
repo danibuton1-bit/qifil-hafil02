@@ -285,12 +285,6 @@ function Home() {
         </div>
         {waiting && <p className="mt-1 text-[10px] text-es-neon">Menunggu {waiting}...</p>}
       </aside>}
-      {false && <aside><div>{[].map(() => (<div><button></button>
-            </div>
-          ))}
-        </div>
-        {waiting && <p className="mt-1 text-xs text-es-neon">Menunggu {waiting}...</p>}
-      </aside>
 
       {/* Bottom-left: mode card */}
       <button onClick={() => setPickMode(true)} className="es-panel absolute bottom-2 left-20 z-10 flex items-center gap-3 px-4 py-2 text-left">
