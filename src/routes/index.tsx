@@ -117,7 +117,7 @@ function Home() {
     ch.on("presence", { event: "sync" }, () => {
       const st = ch.presenceState<Seat>();
       const p = st[other]?.[st[other].length - 1];
-      setMate(p ? { name: p.name, pid: p.pid, skin: p.skin, ready: p.ready, colors: p.colors } : null);
+      setMate(p ? { name: p.name, pid: p.pid, skin: p.skin, ready: p.ready, colors: p.colors ?? null } : null);
     })
       .on("broadcast", { event: "seat" }, ({ payload }) => { if (payload.role === other) setMate(payload.seat); })
       .on("broadcast", { event: "chat" }, ({ payload }) => setChat((c) => [...c.slice(-30), payload as Chat]))
