@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { registerPwa } from "../lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -75,27 +76,24 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    // Replace these placeholders with the app's name and description when first building the app.
-    // Each content route, / included, must still set its own head(). Never add og:image or
-    // twitter:image here: every page without its own would inherit the root's preview image.
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "QIFIL DAN HAFIL" },
+      { name: "description", content: "Game kerja sama QIFIL & HAFIL sambil saling chat." },
       { property: "og:type", content: "website" },
+      { name: "theme-color", content: "#ffffff" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;700&display=swap" },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      { rel: "manifest", href: "/manifest.json" },
     ],
   }),
   shellComponent: RootShell,
@@ -120,11 +118,28 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { void registerPwa(); }, []);
+  useEffect(() => {
+    // Auto-rotate: browsers only allow locking orientation in fullscreen, so lock on first tap.
+    const go = async () => {
+      try {
+        if (!document.fullscreenElement && window.matchMedia("(pointer: coarse)").matches) await document.documentElement.requestFullscreen?.();
+        await (screen.orientation as unknown as { lock?: (o: string) => Promise<void> }).lock?.("landscape");
+      } catch { /* not supported */ }
+    };
+    window.addEventListener("pointerdown", go, { once: true });
+    return () => window.removeEventListener("pointerdown", go);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <div className="rotate-gate" aria-live="polite">
+        <div className="rotate-phone">📱</div>
+        <p className="font-display text-lg">PUTAR HP KE POSISI MIRING</p>
+        <p className="text-sm opacity-70">Game dimainkan dalam mode layar lebar</p>
+      </div>
     </QueryClientProvider>
   );
 }
