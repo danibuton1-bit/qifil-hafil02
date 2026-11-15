@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { SKINS, isSkin, type Skin } from "@/lib/game";
 
 /** Pico-Park style character for menus: blinks every 5 s and taps its feet. */
-export function Character({ skin, size = 80 }: { skin: Skin; size?: number }) {
-  const c = SKINS[skin];
+export function Character({ skin, size = 80, colors }: { skin: Skin; size?: number; colors?: { body: string; hat: string } | null }) {
+  const c = colors ?? SKINS[skin];
   const [blink, setBlink] = useState(false);
   const [leg, setLeg] = useState(0);
   useEffect(() => {
