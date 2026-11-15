@@ -35,4 +35,5 @@ use the editor.
 - Game screen lives in src/components/Game.tsx (shared by online /play and offline /solo); solo mode uses the BOT in src/lib/bot.ts and skips Realtime so it works without login or internet.
 - Offline PWA: vite-plugin-pwa in vite.config.ts; the service worker is registered only via src/lib/pwa.ts, which refuses dev/preview/iframes — keep /~oauth out of SW caching.
 - Diamonds/Lucky Royale: balances and spins change only via security-definer RPCs (spin_lucky, admin_give_diamonds) so clients cannot edit wallets; admin panel lives at a hidden route with no lobby link.
+- Lobby world chat (DUNIA) is persisted in `lobby_messages` with a trigger that stamps the sender name from profiles; team chat (TIM) stays broadcast-only on `party:<room>`.
 <!-- AGENT-MEMORY:END -->
