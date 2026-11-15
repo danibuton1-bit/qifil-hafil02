@@ -197,35 +197,35 @@ function Home() {
     <main className="es-stage">
       <div className="es-grid" />
       {/* Top bar */}
-      <header className="absolute inset-x-2 top-2 flex items-center gap-2">
+      <header className="absolute inset-x-2 top-2 z-30 flex flex-wrap items-center gap-2">
         <img src={logo} alt="QIFIL DAN HAFIL" className="h-10 rounded border border-es-line" />
         <div className="es-panel flex items-center gap-2 px-3 py-1">
           <span className="font-display text-xs">{me?.username ?? "TAMU"}</span>
           {me && <span className="text-xs text-es-dim">ID {me.player_id}</span>}
           <span className="text-xs">{net ? "🟢" : "⚪"}</span>
         </div>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap justify-end gap-2">
           {me && <LuckyRoyale />}
           {me ? <button onClick={logout} className="es-chip">🚪 KELUAR</button> : <Link to="/auth" className="es-chip">🔑 MASUK</Link>}
         </div>
       </header>
 
       {/* Left menu */}
-      <nav className="absolute left-2 top-1/2 flex -translate-y-1/2 flex-col gap-2">
+      <nav className="absolute left-2 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2">
         <button onClick={() => setVault(true)} className="es-side-btn"><span className="text-xl">🎒</span>VAULT</button>
         <button onClick={() => setPickMode(true)} className="es-side-btn"><span className="text-xl">🎮</span>MODE</button>
         <Link to="/mabar" className="es-side-btn"><span className="text-xl">🏆</span>EVENT</Link>
       </nav>
 
       {/* Center stage: you + party mate side by side */}
-      <section className="absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-[28%] pl-20">
+      <section className="pointer-events-none absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-[28%] pl-20">
         {[
           { role: (party?.role ?? "qifil") as Role, name: me?.username ?? "QIFIL", sk: skin, col: lucky, rd: party ? (party.role === "hafil" ? ready : true) : null, you: true },
           ...(party ? [mate
             ? { role: (party.role === "qifil" ? "hafil" : "qifil") as Role, name: mate.name, sk: isSkin(mate.skin) ? mate.skin : ("biru" as Skin), col: mate.colors ?? null, rd: party.role === "qifil" ? mate.ready : true, you: false }
             : null] : []),
         ].map((p, i) => p ? (
-          <div key={p.role} className="relative flex flex-col items-center">
+          <div key={p.role} className="pointer-events-auto relative flex flex-col items-center">
             <div className="es-spot" />
             <span className="mb-1 font-display text-xs tracking-widest text-es-neon">{p.rd === null ? "" : p.rd ? "✔ " : "… "}{p.name}{p.you && party ? " (kamu)" : ""}</span>
             {(() => {
@@ -273,7 +273,7 @@ function Home() {
       )}
 
       {/* Right: online players */}
-      <aside className="es-panel absolute right-2 top-14 bottom-24 flex w-[28%] min-w-44 flex-col p-2">
+      <aside className="es-panel absolute right-2 top-14 z-10 bottom-24 flex w-[28%] min-w-44 flex-col p-2">
         <p className="mb-1 font-display text-[10px] tracking-widest text-es-cyan">👥 PEMAIN ONLINE ({online.length})</p>
         <div className="flex-1 space-y-1 overflow-y-auto">
           {!me && <p className="text-sm text-es-dim">Masuk dulu untuk melihat dan mengajak teman.</p>}
@@ -290,7 +290,7 @@ function Home() {
       </aside>
 
       {/* Bottom-left: mode card */}
-      <button onClick={() => setPickMode(true)} className="es-panel absolute bottom-2 left-20 flex items-center gap-3 px-4 py-2 text-left">
+      <button onClick={() => setPickMode(true)} className="es-panel absolute bottom-2 left-20 z-10 flex items-center gap-3 px-4 py-2 text-left">
         <span className="text-3xl">{cur.icon}</span>
         <span>
           <span className="block text-[10px] tracking-widest text-es-dim">MODE ▸ GANTI</span>
@@ -300,13 +300,13 @@ function Home() {
       </button>
 
       {/* Bottom-right: start */}
-      <button onClick={start} disabled={blocked} className="es-start absolute bottom-3 right-3 px-10 py-3">
+      <button onClick={start} disabled={blocked} className="es-start absolute bottom-3 right-3 z-10 px-10 py-3">
         {blocked ? "BUTUH INTERNET" : needLogin ? "MASUK ▶" : party?.role === "hafil" ? (ready ? "BATAL SIAP" : "SIAP ✔") : party && !mate ? "MENUNGGU…" : "MULAI ▶"}
       </button>
 
       {/* Mode picker */}
       {pickMode && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setPickMode(false)}>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setPickMode(false)}>
           <div className="grid w-full max-w-3xl grid-cols-4 gap-2" onClick={(e) => e.stopPropagation()}>
             {MODES.map((m) => (
               <button key={m.id} onClick={() => chooseMode(m.id)}
@@ -323,7 +323,7 @@ function Home() {
 
       {/* Vault */}
       {vault && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setVault(false)}>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setVault(false)}>
           <div className="es-panel flex items-center gap-6 p-5" onClick={(e) => e.stopPropagation()}>
             <Character skin={skin} size={80} />
             <div>
