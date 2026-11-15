@@ -8,6 +8,13 @@
       "when": 1794713918008,
       "tag": "0000_game_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794714757538,
+      "tag": "0001_admin_music_categories",
+      "breakpoints": true
     }
   ]
 }
