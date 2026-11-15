@@ -18,10 +18,27 @@ export function useLuckySkin() {
   }, []);
   return c;
 }
-const equip = (s: Colors | null) => {
+export const equip = (s: Colors | null) => {
   if (s) localStorage.setItem("luckySkin", JSON.stringify({ body: s.body, hat: s.hat })); else localStorage.removeItem("luckySkin");
   window.dispatchEvent(new Event("lucky-skin"));
 };
+
+/** Lucky Royale skins this player owns; reloads whenever a spin wins a new one. */
+export function useOwnedSkins(enabled = true) {
+  const me = useProfile();
+  const [skins, setSkins] = useState<LuckySkin[]>([]);
+  useEffect(() => {
+    if (!me || !enabled) return;
+    const load = async () => {
+      const { data } = await supabase.from("user_skins").select("created_at, lucky_skins(*)").eq("user_id", me.id).order("created_at");
+      setSkins((data ?? []).map((r) => r.lucky_skins as unknown as LuckySkin).filter(Boolean));
+    };
+    load();
+    window.addEventListener("skins-changed", load);
+    return () => window.removeEventListener("skins-changed", load);
+  }, [me, enabled]);
+  return skins;
+}
 
 export function LuckyRoyale() {
   const me = useProfile();
@@ -73,6 +90,7 @@ export function LuckyRoyale() {
     setIdx(Math.max(0, pool.findIndex((s) => s.id === r.id)));
     setWin(r); setDia(r.diamonds);
     setOwned((o) => (o.includes(r.id) ? o : [...o, r.id]));
+    window.dispatchEvent(new Event("skins-changed"));
   };
 
   const shown = pool[idx];

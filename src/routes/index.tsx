@@ -7,7 +7,9 @@ import { SKINS, type Skin } from "@/lib/game";
 import { Character, savedSkin } from "@/components/Character";
 import { useGameMusic } from "@/lib/music";
 import { isSkin } from "@/lib/game";
-import { LuckyRoyale, useLuckySkin } from "@/components/LuckyRoyale";
+import { LuckyRoyale, useLuckySkin, useOwnedSkins, equip } from "@/components/LuckyRoyale";
+import { LobbyChat } from "@/components/LobbyChat";
+import { RARITY, type Rarity } from "@/lib/economy";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -54,6 +56,7 @@ function Home() {
   const [vault, setVault] = useState(false);
   const [skin, setSkin] = useState<Skin>("pink");
   const lucky = useLuckySkin();
+  const owned = useOwnedSkins();
   const [online, setOnline] = useState<{ pid: string; name: string }[]>([]);
   const [invite, setInvite] = useState<Invite | null>(null);
   const [waiting, setWaiting] = useState("");
@@ -62,7 +65,6 @@ function Home() {
   const [mate, setMate] = useState<Seat | null>(null);
   const [ready, setReady] = useState(false);
   const [chat, setChat] = useState<Chat[]>([]);
-  const [text, setText] = useState("");
   const [emote, setEmote] = useState<Partial<Record<Role, { kind: Emote; at: number }>>>({});
   const pch = useRef<RealtimeChannel | null>(null);
   const seatRef = useRef<Seat | null>(null);
@@ -147,14 +149,11 @@ function Home() {
     showEmote(role, kind);
     pch.current?.send({ type: "broadcast", event: "emote", payload: { role, kind } });
   };
-  const sendChat = (e: React.FormEvent) => {
-    e.preventDefault();
-    const t = text.trim().slice(0, 120);
-    if (!t || !me) return;
+  const sendChat = (t: string) => {
+    if (!me) return;
     const m: Chat = { id: `${Date.now()}${Math.random()}`, name: me.username, text: t };
     setChat((c) => [...c.slice(-30), m]);
     pch.current?.send({ type: "broadcast", event: "chat", payload: m });
-    setText("");
   };
   const leaveParty = (notify = true) => {
     if (notify) pch.current?.send({ type: "broadcast", event: "leave", payload: {} });
@@ -257,18 +256,7 @@ function Home() {
             ))}
             {party && <button onClick={() => leaveParty()} className="es-chip">KELUAR TIM</button>}
           </div>
-          {party && (
-            <div className="es-panel w-64 p-2">
-              <div className="h-24 space-y-0.5 overflow-y-auto text-xs">
-                {chat.length === 0 && <p className="text-es-dim">💬 Chat tim di sini...</p>}
-                {chat.map((m) => <p key={m.id}><b className="text-es-neon">{m.name}:</b> {m.text}</p>)}
-              </div>
-              <form onSubmit={sendChat} className="mt-1 flex gap-1">
-                <input value={text} onChange={(e) => setText(e.target.value)} maxLength={120} placeholder="Ketik pesan..." className="min-w-0 flex-1 rounded border border-es-line bg-transparent px-2 py-1 text-xs" />
-                <button className="rounded bg-es-neon px-2 text-xs font-bold text-es-bg">KIRIM</button>
-              </form>
-            </div>
-          )}
+          <LobbyChat myName={me.username} team={party ? chat : null} onSendTeam={sendChat} />
         </div>
       )}
 
@@ -325,15 +313,31 @@ function Home() {
       {vault && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setVault(false)}>
           <div className="es-panel flex items-center gap-6 p-5" onClick={(e) => e.stopPropagation()}>
-            <Character skin={skin} size={80} />
+            <Character skin={skin} colors={lucky} size={80} />
             <div>
               <p className="mb-2 font-display text-sm tracking-widest text-es-neon">🎒 VAULT · WARNA</p>
               <div className="flex gap-2">
                 {(Object.keys(SKINS) as Skin[]).map((s) => (
                   <button key={s} onClick={() => chooseSkin(s)} aria-label={SKINS[s].label}
-                    className={`h-10 w-10 rounded border-2 ${s === skin ? "border-es-neon" : "border-es-line"}`}
+                    className={`h-10 w-10 rounded border-2 ${s === skin && !lucky ? "border-es-neon" : "border-es-line"}`}
                     style={{ background: SKINS[s].body }} />
                 ))}
+              </div>
+              <p className="mb-1 mt-3 font-display text-xs tracking-widest text-es-cyan">🎰 SKIN LUCKY ROYALE ({owned.length})</p>
+              {!me && <p className="text-xs text-es-dim">Masuk dulu untuk melihat skin kamu.</p>}
+              {me && owned.length === 0 && <p className="text-xs text-es-dim">Belum punya. Spin di LUCKY ROYALE, skin langsung tersimpan di sini.</p>}
+              <div className="flex max-w-64 flex-wrap gap-2">
+                {owned.map((o) => {
+                  const on = lucky?.body === o.body && lucky?.hat === o.hat;
+                  return (
+                    <button key={o.id} onClick={() => equip(o)} aria-label={`Pakai ${o.name}`} title={o.name}
+                      className={`flex w-16 flex-col items-center rounded border-2 p-1 ${on ? "border-es-neon" : "border-es-line"}`}>
+                      <Character skin="pink" colors={o} size={28} />
+                      <span className="w-full truncate text-[10px] font-bold" style={{ color: RARITY[o.rarity as Rarity]?.color }}>{o.name}</span>
+                      {on && <span className="text-[9px] text-es-neon">DIPAKAI</span>}
+                    </button>
+                  );
+                })}
               </div>
               <button onClick={() => setVault(false)} className="es-chip mt-3">SIMPAN ✓</button>
             </div>
