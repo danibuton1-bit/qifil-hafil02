@@ -44,6 +44,11 @@ export function AdminEconomy() {
     const { data, error } = await supabase.rpc("admin_give_diamonds", { _player_id: pick, _amount: n });
     if (error) return setMsg("Gagal: " + error.message);
     const r = data as unknown as { username: string; diamonds: number };
+    const target = players.find((p) => p.player_id === pick);
+    if (target) {
+      const ch = supabase.channel(`wallet:${target.id}`);
+      ch.subscribe((st) => { if (st === "SUBSCRIBED") void ch.send({ type: "broadcast", event: "diamonds", payload: { diamonds: r.diamonds } }).finally(() => setTimeout(() => supabase.removeChannel(ch), 500)); });
+    }
     setMsg(`✅ ${kind} 💎${n} ke ${r.username} (ID ${pick}). Saldo sekarang 💎${r.diamonds}.`);
     load();
   };

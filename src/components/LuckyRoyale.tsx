@@ -45,6 +45,20 @@ export function LuckyRoyale() {
     setOwned((o.data ?? []).map((r) => r.skin_id));
   };
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [me?.id]);
+  useEffect(() => {
+    if (!me) return;
+    const ch = supabase.channel(`wallet:${me.id}`)
+      .on("broadcast", { event: "diamonds" }, ({ payload }) => { if (typeof payload?.diamonds === "number") setDia(payload.diamonds); })
+      .subscribe();
+    const poll = setInterval(async () => {
+      const { data } = await supabase.from("wallets").select("diamonds").eq("user_id", me.id).maybeSingle();
+      if (data) setDia(data.diamonds);
+    }, 10000);
+    const vis = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", vis);
+    return () => { supabase.removeChannel(ch); clearInterval(poll); document.removeEventListener("visibilitychange", vis); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id]);
   useEffect(() => { if (open) load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [open]);
 
   const spin = async () => {
@@ -69,7 +83,7 @@ export function LuckyRoyale() {
       <span className="es-chip">💎 {dia ?? "…"}</span>
       <button onClick={() => setOpen(true)} className="es-chip">🎰 LUCKY ROYALE</button>
       {open && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-es-bg/90 p-4" onClick={() => !rolling && setOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-es-bg/90 p-4" onClick={() => !rolling && setOpen(false)}>
           <div className="es-panel max-h-full w-full max-w-lg overflow-y-auto p-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <p className="font-display text-sm tracking-widest text-es-neon">🎰 LUCKY ROYALE</p>
