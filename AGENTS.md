@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+<!-- AGENT-MEMORY:BEGIN -->
+- Accounts use name+password only: the name maps to a synthetic email via `usernameToEmail` in src/lib/game.ts (auto-confirm on) — never ask for a real email.
+- Multiplayer is peer-to-peer over Realtime broadcast/presence (`lobby` channel for invites, `room:<code>` per match); each phone simulates its own player, the inviter (QIFIL) decides level completion — no server game state.
+- Game screen lives in src/components/Game.tsx (shared by online /play and offline /solo); solo mode uses the BOT in src/lib/bot.ts and skips Realtime so it works without login or internet.
+- Offline PWA: vite-plugin-pwa in vite.config.ts; the service worker is registered only via src/lib/pwa.ts, which refuses dev/preview/iframes — keep /~oauth out of SW caching.
+<!-- AGENT-MEMORY:END -->
