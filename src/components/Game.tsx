@@ -369,7 +369,7 @@ export function Game({ room, role, solo = false }: { room: string; role: Role; s
       <canvas ref={canvasRef} width={W} height={H} className="play-canvas" />
 
       <div className="play-hud">
-        <button onClick={() => navigate({ to: solo ? "/" : "/lobby" })} className="hud-btn">✕</button>
+        <button onClick={() => navigate({ to: "/" })} className="hud-btn">✕</button>
         <span className="hud-chip">Level {level}/{MAX_LEVEL}</span>
         <span className="hud-chip">{partnerHere ? `🟢 ${g.current.names[other]}` : "⏳ Menunggu teman..."}</span>
         {shieldOn && <span className="hud-chip">🛡️ Lindung</span>}
