@@ -306,7 +306,7 @@ function Home() {
 
       {/* Mode picker */}
       {pickMode && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setPickMode(false)}>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setPickMode(false)}>
           <div className="grid w-full max-w-3xl grid-cols-4 gap-2" onClick={(e) => e.stopPropagation()}>
             {MODES.map((m) => (
               <button key={m.id} onClick={() => chooseMode(m.id)}
@@ -323,7 +323,7 @@ function Home() {
 
       {/* Vault */}
       {vault && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setVault(false)}>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-es-bg/85 p-4" onClick={() => setVault(false)}>
           <div className="es-panel flex items-center gap-6 p-5" onClick={(e) => e.stopPropagation()}>
             <Character skin={skin} size={80} />
             <div>
