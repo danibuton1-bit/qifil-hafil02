@@ -21,17 +21,21 @@ export function clampVolume(v: number): number {
   return Math.min(1, Math.max(0, Math.round(v * 10) / 10));
 }
 
-export async function listTracks(): Promise<Track[]> {
-  const { data } = await supabase.from("music_tracks").select("id,title,path,created_at").order("created_at");
+export type MusicCategory = "game" | "lobby";
+
+export async function listTracks(category?: MusicCategory): Promise<Track[]> {
+  let q = supabase.from("music_tracks").select("id,title,path,created_at").order("created_at");
+  if (category) q = q.eq("category", category);
+  const { data } = await q;
   return data ?? [];
 }
 
-export async function uploadTrack(file: File, userId: string) {
+export async function uploadTrack(file: File, userId: string, category: MusicCategory = "game") {
   const path = `${userId}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
   const up = await supabase.storage.from("music").upload(path, file, { contentType: file.type || "audio/mpeg" });
   if (up.error) throw up.error;
   const title = file.name.replace(/\.[^.]+$/, "").slice(0, 60);
-  const { error } = await supabase.from("music_tracks").insert({ title, path, uploaded_by: userId });
+  const { error } = await supabase.from("music_tracks").insert({ title, path, uploaded_by: userId, category });
   if (error) throw error;
 }
 
@@ -42,7 +46,7 @@ export async function deleteTrack(t: Track) {
 }
 
 /** Plays every uploaded song in order, looping the list, with a volume each player sets for themselves. */
-export function useGameMusic() {
+export function useGameMusic(category: MusicCategory = "game") {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [idx, setIdx] = useState(0);
@@ -52,7 +56,7 @@ export function useGameMusic() {
   useEffect(() => {
     const v = Number(localStorage.getItem(VOL_KEY));
     if (localStorage.getItem(VOL_KEY) !== null && !Number.isNaN(v)) setVolumeState(clampVolume(v));
-    listTracks().then(setTracks);
+    listTracks(category).then(setTracks);
     const a = new Audio();
     audio.current = a;
     return () => { a.pause(); a.src = ""; audio.current = null; };
@@ -109,7 +113,7 @@ export function useGameMusic() {
     follow: (m: MusicSync) => {
       const a = audio.current; if (!a) return;
       const i = tracks.findIndex((t) => t.id === m.id);
-      if (i < 0) { listTracks().then(setTracks); return; }
+      if (i < 0) { listTracks(category).then(setTracks); return; }
       if (i !== idx) { seekTo.current = m.t; setIdx(i); return; }
       if (needsSeek(a.currentTime, m.t)) a.currentTime = m.t;
       if (a.paused && !m.paused) a.play().catch(() => setBlocked(true));

@@ -43,7 +43,7 @@ function AuthPage() {
       const m = res.error.message;
       return setErr(m.includes("already") ? "Nama sudah dipakai." : m.includes("Invalid") ? "Nama atau password salah." : m);
     }
-    navigate({ to: "/lobby" });
+    navigate({ to: "/" });
   };
 
   return (
