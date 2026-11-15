@@ -1,0 +1,72 @@
+[
+ {
+  "capability": "app code (game, solo, BayOne, race, lobby, rooms, bluetooth/hotspot pages)",
+  "source": "src/",
+  "outcome": "migrate",
+  "status": "verified",
+  "next_action": "copy source files"
+ },
+ {
+  "capability": "schema: profiles, music_tracks, game_progress, signup trigger",
+  "source": "drizzle/migrations",
+  "outcome": "migrate",
+  "status": "verified",
+  "next_action": "apply migrations on Lovable Cloud"
+ },
+ {
+  "capability": "records",
+  "source": "old Lovable Cloud database",
+  "outcome": "migrate",
+  "status": "pending",
+  "next_action": "request CSV export of profiles, game_progress, music_tracks after preview"
+ },
+ {
+  "capability": "auth identities (name+password, synthetic emails, auto-confirm)",
+  "source": "old Lovable Cloud auth",
+  "outcome": "migrate",
+  "status": "pending",
+  "next_action": "auto-confirm on, signup verified; old players re-register unless user export provided"
+ },
+ {
+  "capability": "authorization (RLS)",
+  "source": "migrations",
+  "outcome": "migrate",
+  "status": "verified",
+  "next_action": "recreate policies"
+ },
+ {
+  "capability": "storage bucket music + uploaded audio bytes",
+  "source": "old storage",
+  "outcome": "migrate",
+  "status": "pending",
+  "next_action": "bucket created; old uploaded songs need re-upload or export"
+ },
+ {
+  "capability": "realtime multiplayer (broadcast/presence)",
+  "source": "src/",
+  "outcome": "migrate",
+  "status": "implemented",
+  "next_action": "works with new Cloud client"
+ },
+ {
+  "capability": "PWA / offline",
+  "source": "vite.config.ts, public/",
+  "outcome": "migrate",
+  "status": "implemented",
+  "next_action": "add vite-plugin-pwa"
+ },
+ {
+  "capability": "secrets",
+  "source": ".env (Cloud client config only)",
+  "outcome": "replace",
+  "status": "verified",
+  "next_action": "new Cloud generates its own"
+ },
+ {
+  "capability": "verification",
+  "source": "-",
+  "outcome": "verify",
+  "status": "verified",
+  "next_action": "build, tests, preview"
+ }
+]
