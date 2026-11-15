@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      lucky_skins: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          hat: string
+          id: string
+          name: string
+          rarity: string
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          created_at?: string
+          hat: string
+          id?: string
+          name: string
+          rarity?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          hat?: string
+          id?: string
+          name?: string
+          rarity?: string
+        }
+        Relationships: []
+      }
       music_tracks: {
         Row: {
           category: string
@@ -101,11 +131,59 @@ export type Database = {
         }
         Relationships: []
       }
+      user_skins: {
+        Row: {
+          created_at: string
+          skin_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          skin_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          skin_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skins_skin_id_fkey"
+            columns: ["skin_id"]
+            isOneToOne: false
+            referencedRelation: "lucky_skins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          diamonds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          diamonds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          diamonds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_give_diamonds: {
+        Args: { _amount: number; _player_id: string }
+        Returns: Json
+      }
       claim_first_admin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
@@ -114,6 +192,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      spin_lucky: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"

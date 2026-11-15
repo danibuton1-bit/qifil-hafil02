@@ -15,6 +15,13 @@
       "when": 1794714757538,
       "tag": "0001_admin_music_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794716265959,
+      "tag": "0002_diamonds_lucky_royale",
+      "breakpoints": true
     }
   ]
 }
