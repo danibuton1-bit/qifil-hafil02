@@ -16,7 +16,7 @@ import { Route as BayoneSoloRouteImport } from './routes/bayone-solo'
 import { Route as BluetoothRouteImport } from './routes/bluetooth'
 import { Route as HotspotRouteImport } from './routes/hotspot'
 import { Route as SoloRouteImport } from './routes/solo'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminQifil7391RouteImport } from './routes/_authenticated/admin-qifil-7391'
 import { Route as AuthenticatedLobbyRouteImport } from './routes/_authenticated/lobby'
 import { Route as AuthenticatedMabarRouteImport } from './routes/_authenticated/mabar'
 import { Route as AuthenticatedBayoneRoomRouteImport } from './routes/_authenticated/bayone.$room'
@@ -58,11 +58,12 @@ const SoloRoute = SoloRouteImport.update({
   path: '/solo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedAdminQifil7391Route =
+  AuthenticatedAdminQifil7391RouteImport.update({
+    id: '/admin-qifil-7391',
+    path: '/admin-qifil-7391',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLobbyRoute = AuthenticatedLobbyRouteImport.update({
   id: '/lobby',
   path: '/lobby',
@@ -101,7 +102,7 @@ export interface FileRoutesByFullPath {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/lobby': typeof AuthenticatedLobbyRoute
   '/mabar': typeof AuthenticatedMabarRoute
   '/bayone/$room': typeof AuthenticatedBayoneRoomRoute
@@ -116,7 +117,7 @@ export interface FileRoutesByTo {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/lobby': typeof AuthenticatedLobbyRoute
   '/mabar': typeof AuthenticatedMabarRoute
   '/bayone/$room': typeof AuthenticatedBayoneRoomRoute
@@ -133,7 +134,7 @@ export interface FileRoutesById {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/_authenticated/lobby': typeof AuthenticatedLobbyRoute
   '/_authenticated/mabar': typeof AuthenticatedMabarRoute
   '/_authenticated/bayone/$room': typeof AuthenticatedBayoneRoomRoute
@@ -150,7 +151,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
-    | '/admin'
+    | '/admin-qifil-7391'
     | '/lobby'
     | '/mabar'
     | '/bayone/$room'
@@ -165,7 +166,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
-    | '/admin'
+    | '/admin-qifil-7391'
     | '/lobby'
     | '/mabar'
     | '/bayone/$room'
@@ -181,7 +182,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
-    | '/_authenticated/admin'
+    | '/_authenticated/admin-qifil-7391'
     | '/_authenticated/lobby'
     | '/_authenticated/mabar'
     | '/_authenticated/bayone/$room'
@@ -251,11 +252,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoloRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+    '/_authenticated/admin-qifil-7391': {
+      id: '/_authenticated/admin-qifil-7391'
+      path: '/admin-qifil-7391'
+      fullPath: '/admin-qifil-7391'
+      preLoaderRoute: typeof AuthenticatedAdminQifil7391RouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lobby': {
@@ -304,7 +305,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminQifil7391Route: typeof AuthenticatedAdminQifil7391Route
   AuthenticatedLobbyRoute: typeof AuthenticatedLobbyRoute
   AuthenticatedMabarRoute: typeof AuthenticatedMabarRoute
   AuthenticatedBayoneRoomRoute: typeof AuthenticatedBayoneRoomRoute
@@ -314,7 +315,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminQifil7391Route: AuthenticatedAdminQifil7391Route,
   AuthenticatedLobbyRoute: AuthenticatedLobbyRoute,
   AuthenticatedMabarRoute: AuthenticatedMabarRoute,
   AuthenticatedBayoneRoomRoute: AuthenticatedBayoneRoomRoute,

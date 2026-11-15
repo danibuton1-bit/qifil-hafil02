@@ -7,6 +7,7 @@ import { SKINS, type Skin } from "@/lib/game";
 import { Character, savedSkin } from "@/components/Character";
 import { useGameMusic } from "@/lib/music";
 import { isSkin } from "@/lib/game";
+import { LuckyRoyale, useLuckySkin } from "@/components/LuckyRoyale";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -35,7 +36,7 @@ const MODES: { id: ModeId; icon: string; name: string; sub: string; online: bool
 ];
 type Invite = { to: string; from: string; fromName: string; room: string };
 type Role = "qifil" | "hafil";
-type Seat = { name: string; pid: string; skin: Skin; ready: boolean };
+type Seat = { name: string; pid: string; skin: Skin; ready: boolean; colors?: { body: string; hat: string } | null };
 type Emote = "love" | "kiss" | "salting";
 type Chat = { id: string; name: string; text: string };
 const EMOTES: { id: Emote; icon: string; label: string }[] = [
@@ -52,6 +53,7 @@ function Home() {
   const [pickMode, setPickMode] = useState(false);
   const [vault, setVault] = useState(false);
   const [skin, setSkin] = useState<Skin>("pink");
+  const lucky = useLuckySkin();
   const [online, setOnline] = useState<{ pid: string; name: string }[]>([]);
   const [invite, setInvite] = useState<Invite | null>(null);
   const [waiting, setWaiting] = useState("");
@@ -115,7 +117,7 @@ function Home() {
     ch.on("presence", { event: "sync" }, () => {
       const st = ch.presenceState<Seat>();
       const p = st[other]?.[st[other].length - 1];
-      setMate(p ? { name: p.name, pid: p.pid, skin: p.skin, ready: p.ready } : null);
+      setMate(p ? { name: p.name, pid: p.pid, skin: p.skin, ready: p.ready, colors: p.colors ?? null } : null);
     })
       .on("broadcast", { event: "seat" }, ({ payload }) => { if (payload.role === other) setMate(payload.seat); })
       .on("broadcast", { event: "chat" }, ({ payload }) => setChat((c) => [...c.slice(-30), payload as Chat]))
@@ -129,11 +131,11 @@ function Home() {
 
   useEffect(() => {
     if (!me || !party) return;
-    const seat: Seat = { name: me.username, pid: me.player_id, skin, ready };
+    const seat: Seat = { name: me.username, pid: me.player_id, skin, ready, colors: lucky };
     seatRef.current = seat;
     pch.current?.track(seat);
     pch.current?.send({ type: "broadcast", event: "seat", payload: { role: party.role, seat } });
-  }, [me, party, skin, ready]);
+  }, [me, party, skin, ready, lucky]);
 
   const showEmote = (role: Role, kind: Emote) => {
     const at = Date.now();
@@ -164,7 +166,7 @@ function Home() {
     navigate({ to: "/play/$room", params: { room: party.room }, search: { role: party.role } });
   };
 
-  const chooseSkin = (s: Skin) => { setSkin(s); localStorage.setItem("skin", s); };
+  const chooseSkin = (s: Skin) => { setSkin(s); localStorage.setItem("skin", s); localStorage.removeItem("luckySkin"); window.dispatchEvent(new Event("lucky-skin")); };
   const chooseMode = (m: ModeId) => { setMode(m); localStorage.setItem("mode", m); setPickMode(false); };
 
   const cur = MODES.find((m) => m.id === mode)!;
@@ -203,7 +205,7 @@ function Home() {
           <span className="text-xs">{net ? "🟢" : "⚪"}</span>
         </div>
         <div className="ml-auto flex gap-2">
-          {me && <Link to="/admin" className="es-chip">🛠 ADMIN</Link>}
+          {me && <LuckyRoyale />}
           {me ? <button onClick={logout} className="es-chip">🚪 KELUAR</button> : <Link to="/auth" className="es-chip">🔑 MASUK</Link>}
         </div>
       </header>
@@ -218,9 +220,9 @@ function Home() {
       {/* Center stage: you + party mate side by side */}
       <section className="absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-[28%] pl-20">
         {[
-          { role: (party?.role ?? "qifil") as Role, name: me?.username ?? "QIFIL", sk: skin, rd: party ? (party.role === "hafil" ? ready : true) : null, you: true },
+          { role: (party?.role ?? "qifil") as Role, name: me?.username ?? "QIFIL", sk: skin, col: lucky, rd: party ? (party.role === "hafil" ? ready : true) : null, you: true },
           ...(party ? [mate
-            ? { role: (party.role === "qifil" ? "hafil" : "qifil") as Role, name: mate.name, sk: isSkin(mate.skin) ? mate.skin : ("biru" as Skin), rd: party.role === "qifil" ? mate.ready : true, you: false }
+            ? { role: (party.role === "qifil" ? "hafil" : "qifil") as Role, name: mate.name, sk: isSkin(mate.skin) ? mate.skin : ("biru" as Skin), col: mate.colors ?? null, rd: party.role === "qifil" ? mate.ready : true, you: false }
             : null] : []),
         ].map((p, i) => p ? (
           <div key={p.role} className="relative flex flex-col items-center">
@@ -233,7 +235,7 @@ function Home() {
               return (
                 <div className={`relative ${e?.kind === "salting" ? "emo-shake" : ""}`}
                   style={{ transition: "transform .4s", transform: kissing ? `translateX(${dir * 34}px) rotate(${dir * 8}deg)` : undefined, filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--es-cyan) 60%, transparent))" }}>
-                  <Character skin={p.sk} size={90} />
+                  <Character skin={p.sk} colors={p.col} size={90} />
                   {e?.kind === "love" && (<>{[0, 1, 2, 3, 4].map((k) => <span key={k} className="emo-heart" style={{ left: `${10 + k * 18}%`, animationDelay: `${k * 0.25}s` }}>❤️</span>)}</>)}
                   {e?.kind === "kiss" && <span className="emo-kiss" style={{ [i === 0 ? "right" : "left"]: "-24px" }}>💋</span>}
                   {e?.kind === "salting" && (<><span className="emo-face">😖</span><span className="emo-blush" style={{ left: "8%" }} /><span className="emo-blush" style={{ right: "8%" }} /></>)}

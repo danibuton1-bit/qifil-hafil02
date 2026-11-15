@@ -2,13 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
+import { AdminEconomy } from "@/components/AdminEconomy";
 import { deleteTrack, listTracks, uploadTrack, type MusicCategory, type Track } from "@/lib/music";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/admin-qifil-7391")({
   head: () => ({
     meta: [
       { title: "Panel Admin Musik - QIFIL DAN HAFIL" },
       { name: "description", content: "Upload dan kelola musik lobi dan musik game." },
+      { name: "robots", content: "noindex" },
       { property: "og:title", content: "Panel Admin Musik - QIFIL DAN HAFIL" },
       { property: "og:description", content: "Kelola musik lobi dan game." },
       { property: "og:type", content: "website" },
@@ -73,6 +75,7 @@ function Admin() {
           </ul>
         </section>
       ))}
+      {isAdmin && <AdminEconomy />}
     </main>
   );
 }
