@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
 import { SKINS, type Skin } from "@/lib/game";
 import { Character, savedSkin } from "@/components/Character";
+import { useGameMusic } from "@/lib/music";
+import { isSkin } from "@/lib/game";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -32,6 +34,15 @@ const MODES: { id: ModeId; icon: string; name: string; sub: string; online: bool
   { id: "bluetooth", icon: "🔵", name: "MABAR BLUETOOTH", sub: "offline", online: false },
 ];
 type Invite = { to: string; from: string; fromName: string; room: string };
+type Role = "qifil" | "hafil";
+type Seat = { name: string; pid: string; skin: Skin; ready: boolean };
+type Emote = "love" | "kiss" | "salting";
+type Chat = { id: string; name: string; text: string };
+const EMOTES: { id: Emote; icon: string; label: string }[] = [
+  { id: "love", icon: "❤️", label: "Love" },
+  { id: "kiss", icon: "💋", label: "Cium" },
+  { id: "salting", icon: "😖", label: "Salting" },
+];
 
 function Home() {
   const me = useProfile();
@@ -45,6 +56,16 @@ function Home() {
   const [invite, setInvite] = useState<Invite | null>(null);
   const [waiting, setWaiting] = useState("");
   const chan = useRef<RealtimeChannel | null>(null);
+  const [party, setParty] = useState<{ room: string; role: Role } | null>(null);
+  const [mate, setMate] = useState<Seat | null>(null);
+  const [ready, setReady] = useState(false);
+  const [chat, setChat] = useState<Chat[]>([]);
+  const [text, setText] = useState("");
+  const [emote, setEmote] = useState<Partial<Record<Role, { kind: Emote; at: number }>>>({});
+  const pch = useRef<RealtimeChannel | null>(null);
+  const seatRef = useRef<Seat | null>(null);
+  const music = useGameMusic("lobby");
+  void music;
 
   useEffect(() => {
     setSkin(savedSkin("qifil"));
@@ -67,7 +88,7 @@ function Home() {
       .on("broadcast", { event: "answer" }, ({ payload }) => {
         if (payload.to !== me.player_id) return;
         setWaiting("");
-        if (payload.ok) navigate({ to: "/room/$room", params: { room: payload.room }, search: { role: "qifil" } });
+        if (payload.ok) setParty({ room: payload.room, role: "qifil" });
         else alert(`${payload.fromName} menolak ajakan.`);
       })
       .subscribe((s) => { if (s === "SUBSCRIBED") ch.track({ name: me.username }); });
@@ -84,9 +105,66 @@ function Home() {
   const answer = (ok: boolean) => {
     if (!invite || !me) return;
     chan.current?.send({ type: "broadcast", event: "answer", payload: { to: invite.from, ok, room: invite.room, fromName: me.username } });
-    if (ok) navigate({ to: "/room/$room", params: { room: invite.room }, search: { role: "hafil" } });
+    if (ok) setParty({ room: invite.room, role: "hafil" });
     setInvite(null);
   };
+  // Party lives inside this one lobby: mate appears next to you, with chat and emotes.
+  useEffect(() => {
+    if (!party || !me) return;
+    const other: Role = party.role === "qifil" ? "hafil" : "qifil";
+    const ch = supabase.channel(`party:${party.room}`, { config: { presence: { key: party.role }, broadcast: { self: false } } });
+    ch.on("presence", { event: "sync" }, () => {
+      const st = ch.presenceState<Seat>();
+      const p = st[other]?.[st[other].length - 1];
+      setMate(p ? { name: p.name, pid: p.pid, skin: p.skin, ready: p.ready } : null);
+    })
+      .on("broadcast", { event: "seat" }, ({ payload }) => { if (payload.role === other) setMate(payload.seat); })
+      .on("broadcast", { event: "chat" }, ({ payload }) => setChat((c) => [...c.slice(-30), payload as Chat]))
+      .on("broadcast", { event: "emote" }, ({ payload }) => showEmote(payload.role, payload.kind))
+      .on("broadcast", { event: "leave" }, () => { setMate(null); if (party.role === "hafil") leaveParty(false); })
+      .on("broadcast", { event: "start" }, () => navigate({ to: "/play/$room", params: { room: party.room }, search: { role: party.role } }))
+      .subscribe((st) => { if (st === "SUBSCRIBED") { pch.current = ch; if (seatRef.current) ch.track(seatRef.current); } });
+    return () => { supabase.removeChannel(ch); pch.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [party, me, navigate]);
+
+  useEffect(() => {
+    if (!me || !party) return;
+    const seat: Seat = { name: me.username, pid: me.player_id, skin, ready };
+    seatRef.current = seat;
+    pch.current?.track(seat);
+    pch.current?.send({ type: "broadcast", event: "seat", payload: { role: party.role, seat } });
+  }, [me, party, skin, ready]);
+
+  const showEmote = (role: Role, kind: Emote) => {
+    const at = Date.now();
+    setEmote((e) => ({ ...e, [role]: { kind, at } }));
+    setTimeout(() => setEmote((e) => (e[role]?.at === at ? { ...e, [role]: undefined } : e)), 2600);
+  };
+  const sendEmote = (kind: Emote) => {
+    const role = party?.role ?? "qifil";
+    showEmote(role, kind);
+    pch.current?.send({ type: "broadcast", event: "emote", payload: { role, kind } });
+  };
+  const sendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    const t = text.trim().slice(0, 120);
+    if (!t || !me) return;
+    const m: Chat = { id: `${Date.now()}${Math.random()}`, name: me.username, text: t };
+    setChat((c) => [...c.slice(-30), m]);
+    pch.current?.send({ type: "broadcast", event: "chat", payload: m });
+    setText("");
+  };
+  const leaveParty = (notify = true) => {
+    if (notify) pch.current?.send({ type: "broadcast", event: "leave", payload: {} });
+    setParty(null); setMate(null); setReady(false); setChat([]);
+  };
+  const startParty = () => {
+    if (!party) return;
+    pch.current?.send({ type: "broadcast", event: "start", payload: {} });
+    navigate({ to: "/play/$room", params: { room: party.room }, search: { role: party.role } });
+  };
+
   const chooseSkin = (s: Skin) => { setSkin(s); localStorage.setItem("skin", s); };
   const chooseMode = (m: ModeId) => { setMode(m); localStorage.setItem("mode", m); setPickMode(false); };
 
@@ -97,8 +175,14 @@ function Home() {
   const start = () => {
     if (blocked) return;
     if (needLogin) return navigate({ to: "/auth" });
+    if (party) {
+      if (party.role === "hafil") return setReady((v) => !v);
+      if (!mate) return;
+      if (!mate.ready) return alert(`${mate.name} belum SIAP.`);
+      return startParty();
+    }
     switch (mode) {
-      case "coop": return online[0] ? ask(online[0].pid, online[0].name) : navigate({ to: "/lobby" });
+      case "coop": return online[0] ? ask(online[0].pid, online[0].name) : alert("Belum ada teman online. Ajak lewat daftar di kanan.");
       case "race": case "mabar": return navigate({ to: "/mabar" });
       case "bayone": return navigate({ to: "/bayone-solo" });
       case "solo": return navigate({ to: "/solo" });
@@ -120,6 +204,7 @@ function Home() {
           <span className="text-xs">{net ? "🟢" : "⚪"}</span>
         </div>
         <div className="ml-auto flex gap-2">
+          {me && <Link to="/admin" className="es-chip">🛠 ADMIN</Link>}
           {me ? <button onClick={logout} className="es-chip">🚪 KELUAR</button> : <Link to="/auth" className="es-chip">🔑 MASUK</Link>}
         </div>
       </header>
@@ -131,16 +216,60 @@ function Home() {
         <Link to="/mabar" className="es-side-btn"><span className="text-xl">🏆</span>EVENT</Link>
       </nav>
 
-      {/* Center stage */}
-      <section className="absolute inset-0 flex items-end justify-center pb-[16%] pr-[28%] pl-20">
-        <div className="relative flex flex-col items-center">
-          <div className="es-spot" />
-          <span className="mb-1 font-display text-xs tracking-widest text-es-neon">{me?.username ?? "QIFIL"}</span>
-          <div className="relative" style={{ filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--es-cyan) 60%, transparent))" }}>
-            <Character skin={skin} size={90} />
+      {/* Center stage: you + party mate side by side */}
+      <section className="absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-[28%] pl-20">
+        {[
+          { role: (party?.role ?? "qifil") as Role, name: me?.username ?? "QIFIL", sk: skin, rd: party ? (party.role === "hafil" ? ready : true) : null, you: true },
+          ...(party ? [mate
+            ? { role: (party.role === "qifil" ? "hafil" : "qifil") as Role, name: mate.name, sk: isSkin(mate.skin) ? mate.skin : ("biru" as Skin), rd: party.role === "qifil" ? mate.ready : true, you: false }
+            : null] : []),
+        ].map((p, i) => p ? (
+          <div key={p.role} className="relative flex flex-col items-center">
+            <div className="es-spot" />
+            <span className="mb-1 font-display text-xs tracking-widest text-es-neon">{p.rd === null ? "" : p.rd ? "✔ " : "… "}{p.name}{p.you && party ? " (kamu)" : ""}</span>
+            {(() => {
+              const e = emote[p.role];
+              const kissing = e?.kind === "kiss" && mate;
+              const dir = i === 0 ? 1 : -1;
+              return (
+                <div className={`relative ${e?.kind === "salting" ? "emo-shake" : ""}`}
+                  style={{ transition: "transform .4s", transform: kissing ? `translateX(${dir * 34}px) rotate(${dir * 8}deg)` : undefined, filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--es-cyan) 60%, transparent))" }}>
+                  <Character skin={p.sk} size={90} />
+                  {e?.kind === "love" && (<>{[0, 1, 2, 3, 4].map((k) => <span key={k} className="emo-heart" style={{ left: `${10 + k * 18}%`, animationDelay: `${k * 0.25}s` }}>❤️</span>)}</>)}
+                  {e?.kind === "kiss" && <span className="emo-kiss" style={{ [i === 0 ? "right" : "left"]: "-24px" }}>💋</span>}
+                  {e?.kind === "salting" && (<><span className="emo-face">😖</span><span className="emo-blush" style={{ left: "8%" }} /><span className="emo-blush" style={{ right: "8%" }} /></>)}
+                </div>
+              );
+            })()}
           </div>
-        </div>
+        ) : (
+          <div key="empty" className="flex h-[117px] w-[90px] items-center justify-center rounded-xl border-4 border-dashed border-es-line text-3xl text-es-dim">?</div>
+        ))}
       </section>
+
+      {/* Emotes + party chat */}
+      {me && (
+        <div className="absolute bottom-20 left-20 z-10 flex flex-col gap-1">
+          <div className="flex gap-1">
+            {EMOTES.map((e) => (
+              <button key={e.id} onClick={() => sendEmote(e.id)} aria-label={e.label} title={e.label} className="es-chip !px-2 text-xl">{e.icon}</button>
+            ))}
+            {party && <button onClick={() => leaveParty()} className="es-chip">KELUAR TIM</button>}
+          </div>
+          {party && (
+            <div className="es-panel w-64 p-2">
+              <div className="h-24 space-y-0.5 overflow-y-auto text-xs">
+                {chat.length === 0 && <p className="text-es-dim">💬 Chat tim di sini...</p>}
+                {chat.map((m) => <p key={m.id}><b className="text-es-neon">{m.name}:</b> {m.text}</p>)}
+              </div>
+              <form onSubmit={sendChat} className="mt-1 flex gap-1">
+                <input value={text} onChange={(e) => setText(e.target.value)} maxLength={120} placeholder="Ketik pesan..." className="min-w-0 flex-1 rounded border border-es-line bg-transparent px-2 py-1 text-xs" />
+                <button className="rounded bg-es-neon px-2 text-xs font-bold text-es-bg">KIRIM</button>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Right: online players */}
       <aside className="es-panel absolute right-2 top-14 bottom-24 flex w-[28%] min-w-44 flex-col p-2">
@@ -152,7 +281,7 @@ function Home() {
             <div key={o.pid} className="flex items-center gap-1 rounded border border-es-line/40 px-2 py-1">
               <span className="h-2 w-2 rounded-full bg-es-cyan" />
               <span className="flex-1 truncate text-sm font-bold">{o.name}</span>
-              <button onClick={() => ask(o.pid, o.name)} className="rounded bg-es-neon px-2 text-xs font-bold text-es-bg">+ AJAK</button>
+              <button disabled={!!party} onClick={() => ask(o.pid, o.name)} className="rounded bg-es-neon px-2 text-xs font-bold text-es-bg">+ AJAK</button>
             </div>
           ))}
         </div>
@@ -171,7 +300,7 @@ function Home() {
 
       {/* Bottom-right: start */}
       <button onClick={start} disabled={blocked} className="es-start absolute bottom-3 right-3 px-10 py-3">
-        {blocked ? "BUTUH INTERNET" : needLogin ? "MASUK ▶" : "MULAI ▶"}
+        {blocked ? "BUTUH INTERNET" : needLogin ? "MASUK ▶" : party?.role === "hafil" ? (ready ? "BATAL SIAP" : "SIAP ✔") : party && !mate ? "MENUNGGU…" : "MULAI ▶"}
       </button>
 
       {/* Mode picker */}
