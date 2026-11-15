@@ -47,19 +47,19 @@ export function LobbyChat({ myName, team, onSendTeam }: { myName: string; team: 
   };
 
   if (!open) return (
-    <button onClick={() => { setOpen(true); setUnread(0); }} className="es-chip relative w-fit">
-      💬 CHAT{unread > 0 && <span className="ml-1 rounded bg-es-neon px-1 text-es-bg">{unread}</span>}
+    <button onClick={() => { setOpen(true); setUnread(0); }} aria-label="Buka chat" className="es-chip relative w-fit !px-2 text-xl">
+      💬{unread > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-es-neon px-1 text-[10px] text-es-bg">{unread}</span>}
     </button>
   );
 
   return (
-    <div className="es-panel w-64 max-w-[calc(100vw-6rem)] p-2">
+    <div className="es-panel w-52 max-w-[calc(100vw-6rem)] p-2">
       <div className="mb-1 flex items-center gap-1">
         <button onClick={() => setTab("dunia")} className={`es-chip ${tab === "dunia" ? "!border-es-neon text-es-neon" : ""}`}>🌍 DUNIA</button>
         {team && <button onClick={() => setTab("tim")} className={`es-chip ${tab === "tim" ? "!border-es-neon text-es-neon" : ""}`}>👥 TIM</button>}
         <button onClick={() => setOpen(false)} aria-label="Tutup chat" className="es-chip ml-auto">✕</button>
       </div>
-      <div ref={box} className="h-24 space-y-0.5 overflow-y-auto text-xs">
+      <div ref={box} className="h-16 space-y-0.5 overflow-y-auto text-xs">
         {list.length === 0 && <p className="text-es-dim">{tab === "tim" ? "💬 Chat tim di sini..." : "💬 Sapa pemain lain di lobi..."}</p>}
         {list.map((m) => <p key={m.id} className="break-words"><b className={m.name === myName ? "text-es-cyan" : "text-es-neon"}>{m.name}:</b> {m.text}</p>)}
       </div>

@@ -52,6 +52,7 @@ function Home() {
   const navigate = useNavigate();
   const [net, setNet] = useState(true);
   const [mode, setMode] = useState<ModeId>("coop");
+  const [showOnline, setShowOnline] = useState(true);
   const [pickMode, setPickMode] = useState(false);
   const [vault, setVault] = useState(false);
   const [skin, setSkin] = useState<Skin>("pink");
@@ -217,7 +218,7 @@ function Home() {
       </nav>
 
       {/* Center stage: you + party mate side by side */}
-      <section className="pointer-events-none absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-[28%] pl-20">
+      <section className="pointer-events-none absolute inset-0 flex items-end justify-center gap-10 pb-[16%] pr-8 pl-20">
         {[
           { role: (party?.role ?? "qifil") as Role, name: me?.username ?? "QIFIL", sk: skin, col: lucky, rd: party ? (party.role === "hafil" ? ready : true) : null, you: true },
           ...(party ? [mate
@@ -261,16 +262,30 @@ function Home() {
       )}
 
       {/* Right: online players */}
-      <aside className="es-panel absolute right-2 top-14 z-10 bottom-24 flex w-[28%] min-w-44 flex-col p-2">
-        <p className="mb-1 font-display text-[10px] tracking-widest text-es-cyan">👥 PEMAIN ONLINE ({online.length})</p>
+      {!showOnline && (
+        <button onClick={() => setShowOnline(true)} aria-label="Lihat teman online" className="es-panel absolute right-0 top-1/3 z-10 rounded-r-none px-1 py-3 font-display text-xs text-es-cyan">
+          &lt;<br />👥<br />{online.length}
+        </button>
+      )}
+      {showOnline && <aside className="es-panel absolute right-2 top-14 z-10 max-h-[55%] flex w-36 flex-col p-1.5">
+        <div className="mb-1 flex items-center">
+          <p className="flex-1 font-display text-[9px] tracking-widest text-es-cyan">👥 ONLINE ({online.length})</p>
+          <button onClick={() => setShowOnline(false)} aria-label="Tutup daftar teman" className="es-chip !px-1.5 !py-0 text-xs">&gt;</button>
+        </div>
         <div className="flex-1 space-y-1 overflow-y-auto">
           {!me && <p className="text-sm text-es-dim">Masuk dulu untuk melihat dan mengajak teman.</p>}
           {me && online.length === 0 && <p className="text-sm text-es-dim">Belum ada pemain lain online.</p>}
           {online.map((o) => (
-            <div key={o.pid} className="flex items-center gap-1 rounded border border-es-line/40 px-2 py-1">
-              <span className="h-2 w-2 rounded-full bg-es-cyan" />
-              <span className="flex-1 truncate text-sm font-bold">{o.name}</span>
-              <button disabled={!!party} onClick={() => ask(o.pid, o.name)} className="rounded bg-es-neon px-2 text-xs font-bold text-es-bg">+ AJAK</button>
+            <div key={o.pid} className="flex items-center gap-1 rounded border border-es-line/40 px-1 py-0.5">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-es-cyan" />
+              <span className="min-w-0 flex-1 truncate text-xs font-bold">{o.name}</span>
+              <button disabled={!!party} onClick={() => ask(o.pid, o.name)} className="rounded bg-es-neon px-1 text-[10px] font-bold text-es-bg">+</button>
+            </div>
+          ))}
+        </div>
+        {waiting && <p className="mt-1 text-[10px] text-es-neon">Menunggu {waiting}...</p>}
+      </aside>}
+      {false && <aside><div>{[].map(() => (<div><button></button>
             </div>
           ))}
         </div>
