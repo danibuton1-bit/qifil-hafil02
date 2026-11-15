@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_progress: {
+        Row: {
+          online_level: number
+          solo_level: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          online_level?: number
+          solo_level?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          online_level?: number
+          solo_level?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      music_tracks: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          title: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path: string
+          title: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          title?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          player_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          player_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
