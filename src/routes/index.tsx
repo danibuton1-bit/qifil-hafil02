@@ -65,7 +65,6 @@ function Home() {
   const pch = useRef<RealtimeChannel | null>(null);
   const seatRef = useRef<Seat | null>(null);
   const music = useGameMusic("lobby");
-  void music;
 
   useEffect(() => {
     setSkin(savedSkin("qifil"));
