@@ -35,6 +35,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lobby_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       lucky_skins: {
         Row: {
           active: boolean
