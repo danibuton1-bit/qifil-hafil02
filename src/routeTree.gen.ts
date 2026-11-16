@@ -16,6 +16,7 @@ import { Route as BayoneSoloRouteImport } from './routes/bayone-solo'
 import { Route as BluetoothRouteImport } from './routes/bluetooth'
 import { Route as HotspotRouteImport } from './routes/hotspot'
 import { Route as SoloRouteImport } from './routes/solo'
+import { Route as SurvivalRouteImport } from './routes/survival'
 import { Route as AuthenticatedAdminQifil7391RouteImport } from './routes/_authenticated/admin-qifil-7391'
 import { Route as AuthenticatedLobbyRouteImport } from './routes/_authenticated/lobby'
 import { Route as AuthenticatedMabarRouteImport } from './routes/_authenticated/mabar'
@@ -56,6 +57,11 @@ const HotspotRoute = HotspotRouteImport.update({
 const SoloRoute = SoloRouteImport.update({
   id: '/solo',
   path: '/solo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurvivalRoute = SurvivalRouteImport.update({
+  id: '/survival',
+  path: '/survival',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminQifil7391Route =
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
+  '/survival': typeof SurvivalRoute
   '/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/lobby': typeof AuthenticatedLobbyRoute
   '/mabar': typeof AuthenticatedMabarRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
+  '/survival': typeof SurvivalRoute
   '/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/lobby': typeof AuthenticatedLobbyRoute
   '/mabar': typeof AuthenticatedMabarRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/bluetooth': typeof BluetoothRoute
   '/hotspot': typeof HotspotRoute
   '/solo': typeof SoloRoute
+  '/survival': typeof SurvivalRoute
   '/_authenticated/admin-qifil-7391': typeof AuthenticatedAdminQifil7391Route
   '/_authenticated/lobby': typeof AuthenticatedLobbyRoute
   '/_authenticated/mabar': typeof AuthenticatedMabarRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
+    | '/survival'
     | '/admin-qifil-7391'
     | '/lobby'
     | '/mabar'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
+    | '/survival'
     | '/admin-qifil-7391'
     | '/lobby'
     | '/mabar'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/bluetooth'
     | '/hotspot'
     | '/solo'
+    | '/survival'
     | '/_authenticated/admin-qifil-7391'
     | '/_authenticated/lobby'
     | '/_authenticated/mabar'
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   BluetoothRoute: typeof BluetoothRoute
   HotspotRoute: typeof HotspotRoute
   SoloRoute: typeof SoloRoute
+  SurvivalRoute: typeof SurvivalRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       path: '/solo'
       fullPath: '/solo'
       preLoaderRoute: typeof SoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/survival': {
+      id: '/survival'
+      path: '/survival'
+      fullPath: '/survival'
+      preLoaderRoute: typeof SurvivalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin-qifil-7391': {
@@ -335,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   BluetoothRoute: BluetoothRoute,
   HotspotRoute: HotspotRoute,
   SoloRoute: SoloRoute,
+  SurvivalRoute: SurvivalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
