@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_banners: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          title?: string
+        }
+        Relationships: []
+      }
       game_progress: {
         Row: {
           online_level: number

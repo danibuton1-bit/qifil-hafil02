@@ -29,6 +29,13 @@
       "when": 1794718707774,
       "tag": "0003_lobby_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794805136566,
+      "tag": "0004_event_banners",
+      "breakpoints": true
     }
   ]
 }
