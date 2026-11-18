@@ -67,6 +67,7 @@ function Home() {
   const [mate, setMate] = useState<Seat | null>(null);
   const [ready, setReady] = useState(false);
   const [chat, setChat] = useState<Chat[]>([]);
+  const [wheel, setWheel] = useState(false);
   const [emote, setEmote] = useState<Partial<Record<Role, { kind: Emote; at: number }>>>({});
   const pch = useRef<RealtimeChannel | null>(null);
   const seatRef = useRef<Seat | null>(null);
@@ -195,7 +196,7 @@ function Home() {
   const logout = async () => { await supabase.auth.signOut(); location.reload(); };
 
   return (
-    <main className="es-stage">
+    <main className="es-stage" onClick={() => setWheel(false)}>
       <LobbyVideoBg />
       <div className="es-grid" />
       <div className="es-floor" />
@@ -235,9 +236,25 @@ function Home() {
               const kissing = e?.kind === "kiss" && mate;
               const dir = i === 0 ? 1 : -1;
               return (
-                <div className={`relative ${e?.kind === "salting" ? "emo-shake" : ""}`}
+                <div onClick={p.you && me ? (ev) => { ev.stopPropagation(); setWheel((w) => !w); } : undefined}
+                  role={p.you && me ? "button" : undefined} aria-label={p.you && me ? "Pilih emote" : undefined}
+                  className={`relative ${p.you && me ? "cursor-pointer" : ""} ${e?.kind === "salting" ? "emo-shake" : ""}`}
                   style={{ transition: "transform .4s", transform: kissing ? `translateX(${dir * 34}px) rotate(${dir * 8}deg)` : undefined, filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--es-cyan) 60%, transparent))" }}>
                   <Character skin={p.sk} colors={p.col} size={90} />
+                  {p.you && wheel && (
+                    <div className="emo-wheel" onClick={(ev) => ev.stopPropagation()}>
+                      {EMOTES.map((em, k) => {
+                        const a = (-90 + (k - (EMOTES.length - 1) / 2) * 55) * Math.PI / 180;
+                        return (
+                          <button key={em.id} aria-label={em.label} title={em.label} className="emo-wheel-btn"
+                            style={{ left: `calc(50% + ${Math.cos(a) * 78}px)`, top: `calc(45% + ${Math.sin(a) * 78}px)` }}
+                            onClick={() => { sendEmote(em.id); setWheel(false); }}>
+                            <span className="text-2xl">{em.icon}</span><span className="text-[8px]">{em.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                   {e?.kind === "love" && (<>{[0, 1, 2, 3, 4].map((k) => <span key={k} className="emo-heart" style={{ left: `${10 + k * 18}%`, animationDelay: `${k * 0.25}s` }}>❤️</span>)}</>)}
                   {e?.kind === "kiss" && <span className="emo-kiss" style={{ [i === 0 ? "right" : "left"]: "-24px" }}>💋</span>}
                   {e?.kind === "salting" && (<><span className="emo-face">😖</span><span className="emo-blush" style={{ left: "8%" }} /><span className="emo-blush" style={{ right: "8%" }} /></>)}
@@ -254,9 +271,6 @@ function Home() {
       {me && (
         <div className="absolute bottom-20 left-20 z-10 flex flex-col gap-1">
           <div className="flex gap-1">
-            {EMOTES.map((e) => (
-              <button key={e.id} onClick={() => sendEmote(e.id)} aria-label={e.label} title={e.label} className="es-chip !px-2 text-xl">{e.icon}</button>
-            ))}
             {party && <button onClick={() => leaveParty()} className="es-chip">KELUAR TIM</button>}
           </div>
           <LobbyChat myName={me.username} team={party ? chat : null} onSendTeam={sendChat} />

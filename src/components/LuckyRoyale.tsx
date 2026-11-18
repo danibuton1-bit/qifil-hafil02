@@ -47,53 +47,44 @@ export function LuckyRoyale() {
   const [pool, setPool] = useState<LuckySkin[]>([]);
   const [owned, setOwned] = useState<string[]>([]);
   const [rolling, setRolling] = useState(false);
-  const [idx, setIdx] = useState(0);
-  const [win, setWin] = useState<(LuckySkin & { duplicate: boolean }) | null>(null);
+  const [idx, setIdx] = useState(-1);
+  const [wins, setWins] = useState<(LuckySkin & { duplicate: boolean })[] | null>(null);
 
-  const load = async () => {
-    if (!me) return;
-    const [w, p, o] = await Promise.all([
-      supabase.from("wallets").select("diamonds").eq("user_id", me.id).maybeSingle(),
-      supabase.from("lucky_skins").select("*").eq("active", true).order("created_at"),
-      supabase.from("user_skins").select("skin_id").eq("user_id", me.id),
-    ]);
-    setDia(w.data?.diamonds ?? 200);
-    setPool((p.data ?? []) as LuckySkin[]);
-    setOwned((o.data ?? []).map((r) => r.skin_id));
-  };
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [me?.id]);
-  useEffect(() => {
-    if (!me) return;
-    const ch = supabase.channel(`wallet:${me.id}`)
-      .on("broadcast", { event: "diamonds" }, ({ payload }) => { if (typeof payload?.diamonds === "number") setDia(payload.diamonds); })
-      .subscribe();
-    const poll = setInterval(async () => {
-      const { data } = await supabase.from("wallets").select("diamonds").eq("user_id", me.id).maybeSingle();
-      if (data) setDia(data.diamonds);
-    }, 10000);
-    const vis = () => { if (document.visibilityState === "visible") load(); };
-    document.addEventListener("visibilitychange", vis);
-    return () => { supabase.removeChannel(ch); clearInterval(poll); document.removeEventListener("visibilitychange", vis); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me?.id]);
-  useEffect(() => { if (open) load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [open]);
+  const order: Rarity[] = ["legendary", "epic", "rare", "common"];
+  const sorted = [...pool].sort((a, b) => order.indexOf(a.rarity as Rarity) - order.indexOf(b.rarity as Rarity));
+  const grand = sorted[0];
 
-  const spin = async () => {
-    if (rolling || dia === null || !canSpin(dia) || !pool.length) return;
-    setRolling(true); setWin(null);
-    const t = setInterval(() => setIdx((i) => (i + 1) % pool.length), 90);
-    const [{ data, error }] = await Promise.all([supabase.rpc("spin_lucky"), new Promise((r) => setTimeout(r, 2200))]);
-    clearInterval(t);
+  /** Free Fire style: highlight runs around the prize grid, slows down and stops on the prize. */
+  const runLight = (target: number) => new Promise<void>((done) => {
+    const n = sorted.length; const steps = n * 3 + ((target - (idx < 0 ? 0 : idx) + n) % n);
+    let i = 0, cur = idx < 0 ? 0 : idx;
+    const tick = () => {
+      cur = (cur + 1) % n; setIdx(cur); i++;
+      if (i >= steps) return done();
+      setTimeout(tick, 50 + Math.pow(i / steps, 3) * 320);
+    };
+    tick();
+  });
+
+  const spin = async (times: 1 | 10) => {
+    if (rolling || dia === null || !sorted.length || dia < SPIN_COST * times) return;
+    setRolling(true); setWins(null);
+    const got: (LuckySkin & { duplicate: boolean })[] = [];
+    let last: (LuckySkin & { duplicate: boolean; diamonds: number }) | null = null;
+    for (let k = 0; k < times; k++) {
+      const { data, error } = await supabase.rpc("spin_lucky");
+      if (error) { if (!got.length) { setRolling(false); return alert(error.message); } break; }
+      last = data as unknown as LuckySkin & { duplicate: boolean; diamonds: number };
+      got.push(last);
+    }
+    if (last) await runLight(Math.max(0, sorted.findIndex((s) => s.id === last!.id)));
     setRolling(false);
-    if (error) return alert(error.message);
-    const r = data as unknown as LuckySkin & { duplicate: boolean; diamonds: number };
-    setIdx(Math.max(0, pool.findIndex((s) => s.id === r.id)));
-    setWin(r); setDia(r.diamonds);
-    setOwned((o) => (o.includes(r.id) ? o : [...o, r.id]));
+    if (!last) return;
+    setDia(last.diamonds); setWins(got);
+    setOwned((o) => [...new Set([...o, ...got.map((g) => g.id)])]);
     window.dispatchEvent(new Event("skins-changed"));
   };
 
-  const shown = pool[idx];
   const mine = pool.filter((s) => owned.includes(s.id));
 
   return (
@@ -107,28 +98,53 @@ export function LuckyRoyale() {
               <p className="font-display text-sm tracking-widest text-es-neon">🎰 LUCKY ROYALE</p>
               <span className="font-display text-sm">💎 {dia}</span>
             </div>
-            {pool.length === 0 ? <p className="mt-4 text-center text-sm text-es-dim">Belum ada hadiah skin.</p> : (
-              <div className="mt-3 flex flex-col items-center">
-                <div className={`flex h-40 w-40 flex-col items-center justify-center rounded-xl border-4 ${rolling ? "animate-pulse" : ""}`}
-                  style={{ borderColor: shown ? RARITY[(shown.rarity as Rarity)]?.color : undefined }}>
-                  {shown && <Character skin="pink" colors={shown} size={70} />}
-                  {shown && <span className="mt-1 text-xs font-bold">{shown.name}</span>}
+            {!grand ? <p className="mt-4 text-center text-sm text-es-dim">Belum ada hadiah skin.</p> : (
+              <div className="mt-3 flex gap-3">
+                <div className="lr-grand flex w-2/5 shrink-0 flex-col items-center justify-center rounded-lg border-2 p-2" style={{ borderColor: RARITY[grand.rarity as Rarity]?.color }}>
+                  <span className="font-display text-[9px] tracking-widest text-es-neon">★ HADIAH UTAMA</span>
+                  <Character skin="pink" colors={grand} size={64} />
+                  <span className="text-center text-xs font-bold">{grand.name}</span>
+                  <span className="text-[10px]" style={{ color: RARITY[grand.rarity as Rarity]?.color }}>{RARITY[grand.rarity as Rarity]?.label}</span>
                 </div>
-                {win && !rolling && (
-                  <p className="mt-2 text-center font-display text-xs" style={{ color: RARITY[win.rarity as Rarity]?.color }}>
-                    🎉 Dapat {win.name} ({RARITY[win.rarity as Rarity]?.label}){win.duplicate ? " · sudah punya" : ""}
-                  </p>
-                )}
-                <button onClick={spin} disabled={rolling || dia === null || !canSpin(dia)} className="mt-3 rounded bg-es-neon px-5 py-2 font-display text-sm text-es-bg disabled:opacity-40">
-                  {rolling ? "MEMUTAR..." : `SPIN · 💎 ${SPIN_COST}`}
-                </button>
-                {dia !== null && !canSpin(dia) && <p className="mt-1 text-xs text-es-dim">Diamond tidak cukup. Minta top up ke admin (ID kamu {me?.player_id}).</p>}
-                <div className="mt-3 flex flex-wrap justify-center gap-2">
-                  {pool.map((s) => (
-                    <span key={s.id} className="flex items-center gap-1 rounded border px-1 text-[10px]" style={{ borderColor: RARITY[s.rarity as Rarity]?.color }}>
-                      <span className="inline-block h-3 w-3 rounded" style={{ background: s.body }} />{s.name}
-                    </span>
-                  ))}
+                <div className="flex-1">
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {sorted.map((s, i) => (
+                      <div key={s.id} className={`lr-cell ${idx === i ? "lr-cell-on" : ""}`} style={{ borderColor: idx === i ? undefined : RARITY[s.rarity as Rarity]?.color }}>
+                        <Character skin="pink" colors={s} size={22} />
+                        <span className="w-full truncate text-center text-[8px]">{s.name}</span>
+                        {owned.includes(s.id) && <span className="absolute right-0.5 top-0 text-[8px] text-es-cyan">✔</span>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={() => spin(1)} disabled={rolling || dia === null || dia < SPIN_COST} className="flex-1 rounded bg-es-cyan px-2 py-2 font-display text-xs text-es-bg disabled:opacity-40">
+                      {rolling ? "..." : <>1x · 💎 {SPIN_COST}</>}
+                    </button>
+                    <button onClick={() => spin(10)} disabled={rolling || dia === null || dia < SPIN_COST * 10} className="flex-1 rounded bg-es-neon px-2 py-2 font-display text-xs text-es-bg disabled:opacity-40">
+                      {rolling ? "..." : <>10x · 💎 {SPIN_COST * 10}</>}
+                    </button>
+                  </div>
+                  {dia !== null && !canSpin(dia) && <p className="mt-1 text-xs text-es-dim">Diamond tidak cukup. Minta top up ke admin (ID kamu {me?.player_id}).</p>}
+                </div>
+              </div>
+            )}
+            {wins && !rolling && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-es-bg/80 p-4" onClick={() => setWins(null)}>
+                <div className="es-panel w-full max-w-sm p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                  <p className="font-display text-sm tracking-widest text-es-neon">🎉 SELAMAT!</p>
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    {wins.map((w, k) => (
+                      <div key={k} className="flex w-16 flex-col items-center rounded border-2 p-1" style={{ borderColor: RARITY[w.rarity as Rarity]?.color }}>
+                        <Character skin="pink" colors={w} size={wins.length > 1 ? 26 : 60} />
+                        <span className="w-full truncate text-[9px] font-bold">{w.name}</span>
+                        {w.duplicate && <span className="text-[8px] text-es-dim">sudah punya</span>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex justify-center gap-2">
+                    {wins.length === 1 && <button onClick={() => { equip(wins[0] ?? null); setWins(null); }} className="es-chip">PAKAI</button>}
+                    <button onClick={() => setWins(null)} className="es-chip">OKE</button>
+                  </div>
                 </div>
               </div>
             )}

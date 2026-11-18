@@ -242,3 +242,11 @@
 .emo-face { position: absolute; top: -34px; left: 50%; margin-left: -16px; font-size: 32px; animation: emo-pop .4s ease-in-out infinite; }
 .emo-shake { animation: emo-shake .25s linear infinite; }
 .emo-blush { position: absolute; top: 58%; width: 18%; height: 8%; border-radius: 9999px; background: color-mix(in oklab, red 55%, transparent); }
+.emo-wheel { position: absolute; inset: 0; z-index: 40; }
+.emo-wheel::before { content: ""; position: absolute; left: 50%; top: 45%; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 9999px; border: 2px dashed var(--es-line); background: radial-gradient(closest-side, color-mix(in oklab, var(--es-bg) 70%, transparent), transparent); pointer-events: none; animation: emo-pop-in .2s ease-out; }
+.emo-wheel-btn { position: absolute; width: 54px; height: 54px; margin: -27px 0 0 -27px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid var(--es-neon); background: var(--es-panel); color: var(--es-text); backdrop-filter: blur(6px); box-shadow: 0 0 14px color-mix(in oklab, var(--es-neon) 50%, transparent); animation: emo-pop-in .2s ease-out; }
+.emo-wheel-btn:active { transform: scale(.9); }
+@keyframes emo-pop-in { from { transform: scale(.3); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+.lr-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: .4rem; border: 2px solid var(--es-line); background: var(--es-panel); transition: transform .08s, box-shadow .08s; }
+.lr-cell-on { transform: scale(1.08); border-color: var(--es-neon); box-shadow: 0 0 18px var(--es-neon), inset 0 0 12px color-mix(in oklab, var(--es-neon) 40%, transparent); }
+.lr-grand { background: radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--es-neon) 35%, transparent), transparent 70%); }
