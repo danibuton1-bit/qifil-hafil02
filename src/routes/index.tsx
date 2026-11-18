@@ -11,6 +11,7 @@ import { LuckyRoyale, useLuckySkin, useOwnedSkins, equip } from "@/components/Lu
 import { LobbyChat } from "@/components/LobbyChat";
 import { LobbyVideoBg } from "@/components/LobbyVideo";
 import { RARITY, type Rarity } from "@/lib/economy";
+import { ALL_EMOTES, emoteById, toggleLoadout, cleanLoadout, MAX_LOADOUT, DEFAULT_LOADOUT } from "@/lib/emotes";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -40,13 +41,8 @@ const MODES: { id: ModeId; icon: string; name: string; sub: string; online: bool
 type Invite = { to: string; from: string; fromName: string; room: string };
 type Role = "qifil" | "hafil";
 type Seat = { name: string; pid: string; skin: Skin; ready: boolean; colors?: { body: string; hat: string } | null };
-type Emote = "love" | "kiss" | "salting";
+type Emote = string;
 type Chat = { id: string; name: string; text: string };
-const EMOTES: { id: Emote; icon: string; label: string }[] = [
-  { id: "love", icon: "❤️", label: "Love" },
-  { id: "kiss", icon: "💋", label: "Cium" },
-  { id: "salting", icon: "😖", label: "Salting" },
-];
 
 function Home() {
   const me = useProfile();
@@ -68,6 +64,9 @@ function Home() {
   const [ready, setReady] = useState(false);
   const [chat, setChat] = useState<Chat[]>([]);
   const [wheel, setWheel] = useState(false);
+  const [loadout, setLoadout] = useState<string[]>(DEFAULT_LOADOUT);
+  useEffect(() => { try { setLoadout(cleanLoadout(JSON.parse(localStorage.getItem("emote-loadout") ?? "null"))); } catch { /* default */ } }, []);
+  const tapLoadout = (id: string) => setLoadout((c) => { const n = toggleLoadout(c, id); localStorage.setItem("emote-loadout", JSON.stringify(n)); return n; });
   const [emote, setEmote] = useState<Partial<Record<Role, { kind: Emote; at: number }>>>({});
   const pch = useRef<RealtimeChannel | null>(null);
   const seatRef = useRef<Seat | null>(null);
@@ -144,9 +143,12 @@ function Home() {
 
   const showEmote = (role: Role, kind: Emote) => {
     const at = Date.now();
-    setEmote((e) => ({ ...e, [role]: { kind, at } }));
-    setTimeout(() => setEmote((e) => (e[role]?.at === at ? { ...e, [role]: undefined } : e)), 2600);
+    const scope = emoteById(kind)?.scope ?? "self";
+    const roles: Role[] = scope === "self" ? [role] : ["qifil", "hafil"];
+    setEmote((e) => { const n = { ...e }; for (const r of roles) n[r] = { kind, at }; return n; });
+    setTimeout(() => setEmote((e) => { const n = { ...e }; for (const r of roles) if (n[r]?.at === at) n[r] = undefined; return n; }), 3200);
   };
+
   const sendEmote = (kind: Emote) => {
     const role = party?.role ?? "qifil";
     showEmote(role, kind);
@@ -238,18 +240,18 @@ function Home() {
               return (
                 <div onClick={p.you && me ? (ev) => { ev.stopPropagation(); setWheel((w) => !w); } : undefined}
                   role={p.you && me ? "button" : undefined} aria-label={p.you && me ? "Pilih emote" : undefined}
-                  className={`relative ${p.you && me ? "cursor-pointer" : ""} ${e?.kind === "salting" ? "emo-shake" : ""}`}
+                  className={`relative ${p.you && me ? "cursor-pointer" : ""} ${emoteById(e?.kind ?? "")?.anim ?? ""}`}
                   style={{ transition: "transform .4s", transform: kissing ? `translateX(${dir * 34}px) rotate(${dir * 8}deg)` : undefined, filter: "drop-shadow(0 0 18px color-mix(in oklab, var(--es-cyan) 60%, transparent))" }}>
                   <Character skin={p.sk} colors={p.col} size={90} />
                   {p.you && wheel && (
                     <div className="emo-wheel" onClick={(ev) => ev.stopPropagation()}>
-                      {EMOTES.map((em, k) => {
-                        const a = (-90 + (k - (EMOTES.length - 1) / 2) * 55) * Math.PI / 180;
+                      {loadout.map((id) => emoteById(id)!).map((em, k, arr) => {
+                        const a = (-90 + (k - (arr.length - 1) / 2) * (300 / Math.max(arr.length - 1, 1))) * Math.PI / 180;
                         return (
                           <button key={em.id} aria-label={em.label} title={em.label} className="emo-wheel-btn"
                             style={{ left: `calc(50% + ${Math.cos(a) * 78}px)`, top: `calc(45% + ${Math.sin(a) * 78}px)` }}
                             onClick={() => { sendEmote(em.id); setWheel(false); }}>
-                            <span className="text-2xl">{em.icon}</span><span className="text-[8px]">{em.label}</span>
+                            <span className="text-xl">{em.icon}</span><span className="text-[7px] leading-none">{em.label}</span>
                           </button>
                         );
                       })}
@@ -257,6 +259,9 @@ function Home() {
                   )}
                   {e?.kind === "love" && (<>{[0, 1, 2, 3, 4].map((k) => <span key={k} className="emo-heart" style={{ left: `${10 + k * 18}%`, animationDelay: `${k * 0.25}s` }}>❤️</span>)}</>)}
                   {e?.kind === "kiss" && <span className="emo-kiss" style={{ [i === 0 ? "right" : "left"]: "-24px" }}>💋</span>}
+                  {e && emoteById(e.kind)?.dark && <span className="emo-aura" />}
+                  {e && !["love", "kiss", "salting"].includes(e.kind) && <span className="emo-face">{emoteById(e.kind)?.icon}</span>}
+                  {e && (e.kind === "couple" || e.kind === "bucin") && (<>{[0, 1, 2, 3].map((k) => <span key={k} className="emo-heart" style={{ left: `${15 + k * 22}%`, animationDelay: `${k * 0.3}s` }}>💗</span>)}</>)}
                   {e?.kind === "salting" && (<><span className="emo-face">😖</span><span className="emo-blush" style={{ left: "8%" }} /><span className="emo-blush" style={{ right: "8%" }} /></>)}
                 </div>
               );
@@ -360,6 +365,21 @@ function Home() {
                       <Character skin="pink" colors={o} size={28} />
                       <span className="w-full truncate text-[10px] font-bold" style={{ color: RARITY[o.rarity as Rarity]?.color }}>{o.name}</span>
                       {on && <span className="text-[9px] text-es-neon">DIPAKAI</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mb-1 mt-3 font-display text-xs tracking-widest text-es-cyan">🎭 EMOT · DI LOBI {loadout.length}/{MAX_LOADOUT}</p>
+              <p className="mb-1 text-[10px] text-es-dim">Ketuk untuk pasang/lepas. Yang menyala muncul saat ketuk karakter.</p>
+              <div className="grid max-w-72 grid-cols-5 gap-1.5">
+                {ALL_EMOTES.map((em) => {
+                  const on = loadout.includes(em.id);
+                  return (
+                    <button key={em.id} onClick={() => tapLoadout(em.id)} aria-label={`${on ? "Lepas" : "Pasang"} emot ${em.label}`} title={em.label}
+                      className={`relative flex flex-col items-center rounded border-2 p-1 ${on ? "border-es-neon" : "border-es-line opacity-60"} ${em.dark ? "bg-es-bg" : ""}`}>
+                      <span className="text-xl">{em.icon}</span>
+                      <span className="w-full truncate text-[8px] font-bold">{em.label}</span>
+                      {em.tag && <span className="emo-tag">{em.tag}</span>}
                     </button>
                   );
                 })}

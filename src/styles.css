@@ -250,3 +250,19 @@
 .lr-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: .4rem; border: 2px solid var(--es-line); background: var(--es-panel); transition: transform .08s, box-shadow .08s; }
 .lr-cell-on { transform: scale(1.08); border-color: var(--es-neon); box-shadow: 0 0 18px var(--es-neon), inset 0 0 12px color-mix(in oklab, var(--es-neon) 40%, transparent); }
 .lr-grand { background: radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--es-neon) 35%, transparent), transparent 70%); }
+@keyframes emo-dance { 0%,100% { transform: rotate(-10deg) translateY(0) } 50% { transform: rotate(10deg) translateY(-8px) } }
+@keyframes emo-bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+@keyframes emo-sad { 0%,100% { transform: translateY(0) scaleY(1) } 50% { transform: translateY(3px) scaleY(.94) } }
+@keyframes emo-spin-k { to { transform: rotate(360deg) } }
+@keyframes emo-sway { 0%,100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
+@keyframes emo-float-k { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-16px) } }
+@keyframes emo-aura { 0%,100% { opacity: .6; transform: scale(1) } 50% { opacity: 1; transform: scale(1.15) } }
+.emo-dance { animation: emo-dance .45s ease-in-out infinite; }
+.emo-bounce { animation: emo-bounce .4s ease-in-out infinite; }
+.emo-sad { animation: emo-sad .8s ease-in-out infinite; }
+.emo-spin { animation: emo-spin-k .8s linear infinite; }
+.emo-sway { animation: emo-sway .9s ease-in-out infinite; }
+.emo-float { animation: emo-float-k 1.2s ease-in-out infinite; }
+.emo-dark { filter: brightness(.55) saturate(1.6) drop-shadow(0 0 16px oklch(0.45 0.25 300)) !important; }
+.emo-aura { position: absolute; inset: -30% -40%; border-radius: 9999px; background: radial-gradient(closest-side, oklch(0.35 0.25 300 / .8), oklch(0.15 0.1 300 / .4) 60%, transparent); animation: emo-aura .8s ease-in-out infinite; pointer-events: none; z-index: -1; }
+.emo-tag { position: absolute; top: -6px; right: -10px; border-radius: 4px; background: var(--es-neon); color: var(--es-bg); font-size: 7px; font-weight: 800; padding: 0 3px; }
