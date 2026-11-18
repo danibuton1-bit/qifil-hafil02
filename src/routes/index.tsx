@@ -146,7 +146,7 @@ function Home() {
     const scope = emoteById(kind)?.scope ?? "self";
     const roles: Role[] = scope === "self" ? [role] : ["qifil", "hafil"];
     setEmote((e) => { const n = { ...e }; for (const r of roles) n[r] = { kind, at }; return n; });
-    setTimeout(() => setEmote((e) => { const n = { ...e }; for (const r of roles) if (n[r]?.at === at) n[r] = undefined; return n; }), 3200);
+    setTimeout(() => setEmote((e) => { const n = { ...e }; for (const r of roles) if (n[r]?.at === at) delete n[r]; return n; }), 3200);
   };
 
   const sendEmote = (kind: Emote) => {
