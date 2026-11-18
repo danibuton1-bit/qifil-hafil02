@@ -225,6 +225,7 @@
   .es-side-btn { @apply flex w-16 flex-col items-center gap-0.5 border border-es-line bg-es-panel py-2 font-display text-[9px] tracking-widest text-es-text backdrop-blur-md transition hover:border-es-neon hover:text-es-neon; clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%); }
   .es-start { @apply relative font-display text-lg font-black tracking-[0.2em] text-es-bg disabled:opacity-40; background: linear-gradient(135deg, var(--es-neon), oklch(0.72 0.19 50)); box-shadow: 0 0 24px color-mix(in oklab, var(--es-neon) 60%, transparent); clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
   .es-chip { @apply rounded border border-es-line bg-es-panel px-2 py-0.5 text-xs font-bold; }
+  .es-floor { @apply pointer-events-none absolute inset-x-0 bottom-0 h-[22%]; background: linear-gradient(to bottom, color-mix(in oklab, var(--es-cyan) 35%, transparent), color-mix(in oklab, var(--background) 85%, transparent) 30%); border-top: 2px solid color-mix(in oklab, var(--es-cyan) 60%, transparent); transform: perspective(500px) rotateX(25deg); transform-origin: bottom; }
   .es-spot { @apply absolute bottom-[14%] left-1/2 h-10 w-[55%] -translate-x-1/2 rounded-[50%]; background: radial-gradient(closest-side, color-mix(in oklab, var(--es-cyan) 70%, transparent), transparent); box-shadow: 0 0 40px var(--es-cyan); }
   .rotate-gate { @apply fixed inset-0 z-[100] hidden flex-col items-center justify-center gap-3 bg-es-bg p-6 text-center font-ui text-es-text; }
   .rotate-phone { @apply text-6xl; animation: rot 1.8s ease-in-out infinite; }

@@ -9,6 +9,7 @@ import { useGameMusic } from "@/lib/music";
 import { isSkin } from "@/lib/game";
 import { LuckyRoyale, useLuckySkin, useOwnedSkins, equip } from "@/components/LuckyRoyale";
 import { LobbyChat } from "@/components/LobbyChat";
+import { LobbyVideoBg } from "@/components/LobbyVideo";
 import { RARITY, type Rarity } from "@/lib/economy";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
@@ -195,7 +196,9 @@ function Home() {
 
   return (
     <main className="es-stage">
+      <LobbyVideoBg />
       <div className="es-grid" />
+      <div className="es-floor" />
       {/* Top bar */}
       <header className="absolute inset-x-2 top-2 z-30 flex flex-wrap items-center gap-2">
         <img src={logo} alt="QIFIL DAN HAFIL" className="h-10 rounded border border-es-line" />
@@ -226,7 +229,6 @@ function Home() {
             : null] : []),
         ].map((p, i) => p ? (
           <div key={p.role} className="pointer-events-auto relative flex flex-col items-center">
-            <div className="es-spot" />
             <span className="mb-1 font-display text-xs tracking-widest text-es-neon">{p.rd === null ? "" : p.rd ? "✔ " : "… "}{p.name}{p.you && party ? " (kamu)" : ""}</span>
             {(() => {
               const e = emote[p.role];

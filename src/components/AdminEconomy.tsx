@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLobbyVideo } from "@/components/LobbyVideo";
 import { RARITY, validGift, type LuckySkin, type Rarity } from "@/lib/economy";
 
 type Player = { id: string; username: string; player_id: string; diamonds: number };
@@ -57,6 +58,7 @@ export function AdminEconomy() {
 
   return (
     <>
+      <AdminLobbyVideo />
       <section className="pixel-card mx-auto mt-4 max-w-2xl">
         <p className="mb-2 font-pixel text-xs">💎 GIFT / TOP UP DIAMOND</p>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari ID atau nama pemain..." className="w-full rounded border bg-transparent px-2 py-1 text-sm" />
