@@ -1,5 +1,5 @@
 // Survival (Squid Game style) rules. Pure helpers so they can be tested.
-export type SurvivalKind = "ghost" | "gun" | "tug" | "glass" | "redlight" | "lava" | "bomb" | "tiles" | "rain" | "crown";
+export type SurvivalKind = "ghost" | "gun" | "tug" | "glass" | "redlight" | "lava" | "bomb" | "tiles" | "rain" | "laser" | "barrel" | "meteor" | "wind" | "color" | "saw" | "mines" | "piston" | "cannon" | "zone" | "crown";
 export const SURVIVAL_LEVELS: { kind: SurvivalKind; icon: string; name: string; goal: string }[] = [
   { kind: "ghost", icon: "👻", name: "DIKEJAR HANTU", goal: "Lari ke garis finis, jangan tersentuh hantu!" },
   { kind: "gun", icon: "🔫", name: "REBUT KUNCI", goal: "Tembak lawan, pegang kunci 10 detik untuk menang." },
@@ -10,6 +10,16 @@ export const SURVIVAL_LEVELS: { kind: SurvivalKind; icon: string; name: string; 
   { kind: "bomb", icon: "💣", name: "OPER BOM", goal: "Sentuh pemain lain untuk mengoper bom sebelum meledak." },
   { kind: "tiles", icon: "🧱", name: "UBIN RUNTUH", goal: "Ubin runtuh setelah diinjak. Bertahan 25 detik." },
   { kind: "rain", icon: "🗡️", name: "HUJAN DURI", goal: "Hindari duri yang jatuh. Bertahan 25 detik." },
+  { kind: "laser", icon: "🔴", name: "LASER SAPU", goal: "Lompati laser rendah, jangan lompat saat laser atas! 25 detik." },
+  { kind: "barrel", icon: "🛢️", name: "TONG GELINDING", goal: "Lompati tong yang menggelinding. Bertahan 25 detik." },
+  { kind: "meteor", icon: "☄️", name: "HUJAN METEOR", goal: "Lari dari lingkaran merah sebelum meteor jatuh!" },
+  { kind: "wind", icon: "🌪️", name: "BADAI TOPAN", goal: "Angin mendorongmu! Jangan sampai jatuh. 25 detik." },
+  { kind: "color", icon: "🎨", name: "LANTAI WARNA", goal: "Berdiri di ubin warna yang diminta sebelum lantai lain hilang!" },
+  { kind: "saw", icon: "⚙️", name: "GERGAJI PUTAR", goal: "Lari ke finis melewati gergaji yang naik-turun." },
+  { kind: "mines", icon: "💥", name: "LADANG RANJAU", goal: "Lompati ranjau yang berkedip, sampai ke finis!" },
+  { kind: "piston", icon: "🧱", name: "BALOK PENUMBUK", goal: "Lewati saat balok terangkat, jangan tergencet!" },
+  { kind: "cannon", icon: "🎯", name: "MERIAM PANTUL", goal: "Hindari bola besi yang memantul. Bertahan 25 detik." },
+  { kind: "zone", icon: "☠️", name: "ZONA GAS", goal: "Gas beracun menyempit dari dua sisi. Tetap di tengah 25 detik!" },
   { kind: "crown", icon: "👑", name: "FINAL MAHKOTA", goal: "Rebut mahkota, pegang 8 detik jadi JUARA!" },
 ];
 export const SURVIVAL_MAX = SURVIVAL_LEVELS.length;

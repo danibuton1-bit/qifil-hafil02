@@ -1,3 +1,4 @@
+import { sfx } from "@/lib/sfx";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
@@ -59,7 +60,7 @@ export function LuckyRoyale() {
     const n = sorted.length; const steps = n * 3 + ((target - (idx < 0 ? 0 : idx) + n) % n);
     let i = 0, cur = idx < 0 ? 0 : idx;
     const tick = () => {
-      cur = (cur + 1) % n; setIdx(cur); i++;
+      cur = (cur + 1) % n; setIdx(cur); i++; sfx.tap();
       if (i >= steps) return done();
       setTimeout(tick, 50 + Math.pow(i / steps, 3) * 320);
     };
@@ -80,7 +81,7 @@ export function LuckyRoyale() {
     if (last) await runLight(Math.max(0, sorted.findIndex((s) => s.id === last!.id)));
     setRolling(false);
     if (!last) return;
-    setDia(last.diamonds); setWins(got);
+    sfx.win(); setDia(last.diamonds); setWins(got);
     setOwned((o) => [...new Set([...o, ...got.map((g) => g.id)])]);
     window.dispatchEvent(new Event("skins-changed"));
   };

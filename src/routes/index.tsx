@@ -11,6 +11,7 @@ import { LuckyRoyale, useLuckySkin, useOwnedSkins, equip } from "@/components/Lu
 import { LobbyChat } from "@/components/LobbyChat";
 import { LobbyVideoBg } from "@/components/LobbyVideo";
 import { RARITY, type Rarity } from "@/lib/economy";
+import { sfx } from "@/lib/sfx";
 import { ALL_EMOTES, emoteById, toggleLoadout, cleanLoadout, MAX_LOADOUT, DEFAULT_LOADOUT } from "@/lib/emotes";
 import logo from "@/assets/qifil-hafil-logo.jpg";
 
@@ -151,13 +152,13 @@ function Home() {
 
   const sendEmote = (kind: Emote) => {
     const role = party?.role ?? "qifil";
-    showEmote(role, kind);
+    showEmote(role, kind); sfx.emote(kind);
     pch.current?.send({ type: "broadcast", event: "emote", payload: { role, kind } });
   };
   const sendChat = (t: string) => {
     if (!me) return;
     const m: Chat = { id: `${Date.now()}${Math.random()}`, name: me.username, text: t };
-    setChat((c) => [...c.slice(-30), m]);
+    setChat((c) => [...c.slice(-30), m]); sfx.chat();
     pch.current?.send({ type: "broadcast", event: "chat", payload: m });
   };
   const leaveParty = (notify = true) => {

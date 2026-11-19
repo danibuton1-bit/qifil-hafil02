@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { bridgeOpen, caughtMoving, glassPattern, SURVIVAL_MAX, tugResult, tugStep } from "./survival";
+import { SURVIVAL_LEVELS, bridgeOpen, caughtMoving, glassPattern, SURVIVAL_MAX, tugResult, tugStep } from "./survival";
 
 describe("survival rules", () => {
-  it("has 10 levels", () => expect(SURVIVAL_MAX).toBe(10));
+  it("has 20 levels with no repeated game", () => { expect(SURVIVAL_MAX).toBe(20); expect(new Set(SURVIVAL_LEVELS.map((l) => l.kind)).size).toBe(20); expect(SURVIVAL_LEVELS[19]!.kind).toBe("crown"); });
   it("timed bridge stays open 4 seconds after one press", () => {
     expect(bridgeOpen(1000, 4900)).toBe(true);
     expect(bridgeOpen(1000, 5000)).toBe(false);
