@@ -137,6 +137,36 @@ export type Database = {
         }
         Relationships: []
       }
+      private_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          recipient_id: string
+          recipient_name: string
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          recipient_id: string
+          recipient_name?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          recipient_name?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
