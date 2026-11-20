@@ -6,6 +6,7 @@ import { useProfile } from "@/lib/use-profile";
 import { BOX, GY, GRAVITY, H, MAX_LEVEL, PH, PW, SHIELD_MS, SKINS, W, hazardCheck, isSkin, levelAt, overlap, step, touches, type Body, type Input, type Skin } from "@/lib/game";
 import { savedSkin } from "@/components/Character";
 import { useGameMusic } from "@/lib/music";
+import { SettingsMenu } from "@/components/SettingsMenu";
 import { botInput, loadProgress, saveProgress } from "@/lib/bot";
 import { loadCloud, saveCloud } from "@/lib/progress";
 
@@ -369,7 +370,6 @@ export function Game({ room, role, solo = false }: { room: string; role: Role; s
       <canvas ref={canvasRef} width={W} height={H} className="play-canvas" />
 
       <div className="play-hud">
-        <button onClick={() => navigate({ to: "/" })} className="hud-btn">✕</button>
         <span className="hud-chip">Level {level}/{MAX_LEVEL}</span>
         <span className="hud-chip">{partnerHere ? `🟢 ${g.current.names[other]}` : "⏳ Menunggu teman..."}</span>
         {shieldOn && <span className="hud-chip">🛡️ Lindung</span>}
@@ -383,6 +383,8 @@ export function Game({ room, role, solo = false }: { room: string; role: Role; s
         )}
         <button onClick={fullscreen} className="hud-btn">⛶</button>
         <button onClick={() => setChatOpen((v) => !v)} className="hud-btn">💬</button>
+        <span className="ml-auto" />
+        <SettingsMenu className="hud-btn" exitLabel="KELUAR KE LOBI" onExit={() => navigate({ to: "/" })} />
       </div>
 
       {toast && <div className="play-toast">{toast}</div>}

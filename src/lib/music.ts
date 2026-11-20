@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/lib/settings";
 
 export type Track = { id: string; title: string; path: string; created_at: string };
 
@@ -52,6 +53,7 @@ export function useGameMusic(category: MusicCategory = "game") {
   const [idx, setIdx] = useState(0);
   const [volume, setVolumeState] = useState(0.6);
   const [blocked, setBlocked] = useState(false);
+  const { music: musicOn } = useSettings();
 
   useEffect(() => {
     const v = Number(localStorage.getItem(VOL_KEY));
@@ -82,6 +84,11 @@ export function useGameMusic(category: MusicCategory = "game") {
     });
     return () => { off = true; };
   }, [idx, tracks]);
+
+  // Settings ⚙️ can switch the music off for this player only.
+  useEffect(() => {
+    if (audio.current) audio.current.muted = !musicOn;
+  }, [musicOn, idx, tracks]);
 
   useEffect(() => {
     if (audio.current) audio.current.volume = volume;

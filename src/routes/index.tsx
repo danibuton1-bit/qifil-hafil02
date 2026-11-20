@@ -10,6 +10,7 @@ import { isSkin } from "@/lib/game";
 import { LuckyRoyale, useLuckySkin, useOwnedSkins, equip } from "@/components/LuckyRoyale";
 import { LobbyChat } from "@/components/LobbyChat";
 import { LobbyVideoBg } from "@/components/LobbyVideo";
+import { SettingsMenu } from "@/components/SettingsMenu";
 import { RARITY, type Rarity } from "@/lib/economy";
 import { sfx } from "@/lib/sfx";
 import { ALL_EMOTES, emoteById, toggleLoadout, cleanLoadout, MAX_LOADOUT, DEFAULT_LOADOUT } from "@/lib/emotes";
@@ -213,7 +214,8 @@ function Home() {
         </div>
         <div className="ml-auto flex flex-wrap justify-end gap-2">
           {me && <LuckyRoyale />}
-          {me ? <button onClick={logout} className="es-chip">🚪 KELUAR</button> : <Link to="/auth" className="es-chip">🔑 MASUK</Link>}
+          {!me && <Link to="/auth" className="es-chip">🔑 MASUK</Link>}
+          <SettingsMenu exitLabel={me ? "KELUAR AKUN" : "TUTUP"} onExit={() => { if (me) void logout(); }} />
         </div>
       </header>
 

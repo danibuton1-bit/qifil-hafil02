@@ -6,6 +6,7 @@ import { Character, savedSkin } from "@/components/Character";
 import { useLuckySkin } from "@/components/LuckyRoyale";
 import { useProfile } from "@/lib/use-profile";
 import { useGameMusic } from "@/lib/music";
+import { SettingsMenu } from "@/components/SettingsMenu";
 import { sfx } from "@/lib/sfx";
 import { ALL_EMOTES, cleanLoadout, DEFAULT_LOADOUT, emoteById } from "@/lib/emotes";
 
@@ -363,11 +364,12 @@ export function Survival() {
     <div className="play-stage">
       <canvas ref={canvas} width={W} height={H} className="play-canvas" />
       <div className="play-hud">
-        <button onClick={() => navigate({ to: "/" })} className="hud-btn" aria-label="Keluar">✕</button>
         <span className="hud-chip">👑 SURVIVAL {level}/{SURVIVAL_MAX} · {info.icon} {info.name}</span>
         <button onClick={() => setPanel(panel === "emo" ? null : "emo")} className="hud-btn" aria-label="Emot">😊</button>
         <button onClick={() => setPanel(panel === "chat" ? null : "chat")} className="hud-btn" aria-label="Chat">💬</button>
         {music.hasMusic && <button onClick={music.skip} className="hud-btn" aria-label="Lagu berikutnya">⏭</button>}
+        <span className="ml-auto" />
+        <SettingsMenu className="hud-btn" exitLabel="KELUAR KE LOBI" onExit={() => navigate({ to: "/" })} />
       </div>
       {toast && <div className="play-toast">{toast}</div>}
       {log.length > 0 && <div className="pointer-events-none fixed left-2 top-14 z-30 max-w-[45%] space-y-0.5 text-[11px]">{log.map((l, k) => <p key={k} className="rounded bg-es-bg/70 px-2 py-0.5 text-es-text"><b className="text-es-cyan">{l.n}:</b> {l.t}</p>)}</div>}

@@ -1,7 +1,12 @@
 /** Tiny Web-Audio synth for game sound effects — no files, works offline. */
+import { onSettings, readSettings } from "@/lib/settings";
+
 let ctx: AudioContext | null = null;
+let enabled: boolean | null = null;
 const ac = () => {
   if (typeof window === "undefined") return null;
+  if (enabled === null) { enabled = readSettings().sfx; onSettings((s) => { enabled = s.sfx; }); }
+  if (!enabled) return null;
   try { ctx ??= new AudioContext(); if (ctx.state === "suspended") void ctx.resume(); return ctx; } catch { return null; }
 };
 function tone(f1: number, f2: number, dur: number, type: OscillatorType = "square", vol = 0.1, delay = 0) {
