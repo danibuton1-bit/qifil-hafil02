@@ -36,4 +36,7 @@ use the editor.
 - Offline PWA: vite-plugin-pwa in vite.config.ts; the service worker is registered only via src/lib/pwa.ts, which refuses dev/preview/iframes — keep /~oauth out of SW caching.
 - Diamonds/Lucky Royale: balances and spins change only via security-definer RPCs (spin_lucky, admin_give_diamonds) so clients cannot edit wallets; admin panel lives at a hidden route with no lobby link.
 - Lobby world chat (DUNIA) is persisted in `lobby_messages` with a trigger that stamps the sender name from profiles; team chat (TIM) stays broadcast-only on `party:<room>`.
+- Per-player sound settings live in src/lib/settings.ts (localStorage + "qh-settings" event); sfx, music and lobby video read them, and the ⚙️ SettingsMenu sits top-right in lobby and game HUDs with the exit button inside.
+- Lobby background videos are every event_banners row titled "[VIDEO]", played as a looping playlist; sound starts only after the first tap (autoplay rules).
+- Admin AI skin generator calls Groq (user's own GROQ_API_KEY) from an admin-checked server function in src/lib/skin-ai.functions.ts; output is sanitized by cleanAiSkins before insert.
 <!-- AGENT-MEMORY:END -->
